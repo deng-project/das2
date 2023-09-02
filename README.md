@@ -13,4 +13,4 @@ Supported formats for das2 conversion are glTF 2.0, Wavefront OBJ, STL, 3DS, Col
 
 ## Format specification
 
-Please refer to [SPECIFICATION.md](/SPECIFICATION.md) for more information.
+Please refer to [SPECIFICATION.md](SPECIFICATION.md) for more information.
