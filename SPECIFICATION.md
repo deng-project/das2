@@ -3,23 +3,49 @@
 das2 is a binary runtime asset delivery format supported by [DENG](/deng/deng).
 This documentation is mainly created for people implementing das2 into their projects.
 
-## Conventions
+## Concepts
 
-* Structure is a block of meaningful data that can be serialized or unserialized
-* Each structure has a specific signature byte representing it
-* String representation in binary is done like this: `{ u8: encoding, u16: uStringlength, u64 uHash, [char]: data }`.
-  This structure is represented as `String` data type later. Keep in mind that `uStringLength` property doesn't include trailing `\x00` character.
+### Matrices, quaternions, vectors
 
-## Reference manual
+### Scenes and hierarchies
 
-das2 consists of two kinds of structures. The first structure `DasHeader` is used to store various 
+das2 assets must contain at least one scene. Scenes are used to represent relations between different objects, which by themselves are bound to
+scene nodes. In das2, scenes are defined with `das2::Scene` structure and nodes with `das2::Node` structure. Nodes can bind mesh groups to 
+skeletons, give objects certain transformation properties and form an hierarchy that defines an order in which transformations need to be applied.
+Let's assume, we have a following scene hierarchy
+```
+A 
+ \
+  B
+ / \
+C   D
+```
+
+The order of transformations in that particular hierarchy would look like this:
+```
+     A
+     |
+    A*B
+   /   \
+A*B*C A*B*D
+```
+Thus it is important to consider for implementations, that there is an implicit transformation dependency between all nodes in a particular tree.
+
+Similar to scenes, hierarchies can be used in context of skeletons as well. Skeleton hierarchy doesn't use `das2::Node` structure but instead 
+uses `das2::SkeletonJoint` structure. The main difference between `das2::Node` and `das2::JointNode` is that `das2::JointNode` contains 
+inverse bind position matrix. This matrix, when applied, restores the origin position for that joint.
+
+
+## Structure reference manual
+
+das2 consists of two kinds of structures. The first structure `das2::Header` is used to store various 
 kind of information about the file such as author's name, comment and license as well as information 
-such as zlib compression level, vertices count etc. `DasHeader` itself is the only structure in the 
+such as zlib compression level, vertices count etc. `das2::Header` itself is the only structure in the 
 file that is not compressed at any zlib compression level. The other section of structures that are in das2
 format are so-called body formats. These various formats declare buffers, meshes, skeletons, materials,
 animations and so on.
 
-### DasHeader (head/x0000000032736164) 
+### das2::Header (head/x0000000032736164) 
 
 #### Synopsis 
 
@@ -39,7 +65,7 @@ about the file itself.
 | u32       | uDefaultSceneIndex | index of the default scene to use           | 0                 | yes         |
 | u8        | uZlibLevel         | zlib compression level [0-9]                | 0                 | yes         |
 
-### DasBuffer (body/x01)
+### das2::Buffer (body/x01)
 
 #### Synopsis
 
@@ -55,7 +81,7 @@ Blob of data which contains various information about meshes itself.
 
 NOTE: Since the integer width for describing the buffer length is 32 bits, the maximum buffer size is limited to 4GB.
 
-### DasMesh (body/x02)
+### das2::Mesh (body/x02)
 
 #### Synopsis
 
@@ -86,7 +112,7 @@ Mesh structure essentially describes the vertex attributes of a mesh and how it 
 
 Order of UVs: normal, occlusion, emissive, albedo, metalness, roughness, phongDiffuse, phongSpecular
 
-### DasMeshGroup (body/x03)
+### das2::MeshGroup (body/x03)
 
 #### Synopsis
 
@@ -101,7 +127,7 @@ Mesh groups are used to logically group meshes into larger units that are drawn.
 | u32       | uMeshCount    | number of meshes to group together | 0             | yes        |
 | [u32]     | pMeshes       | array of mesh IDs to group         | []            | yes        |
 
-### DasNode (body/x04)
+### das2::Node (body/x04)
 
 #### Synopsis
 
@@ -122,11 +148,11 @@ Nodes are used as building blocks to define scene hierarchy.
 | Vector3f   | vTranslation     | translation vector                      | [ 0, 0, 0 ]       | yes        |
 | f32        | fScale           | scale transformation property           | 1.f               | yes        |
 
-### DasScene (body/x05)
+### das2::Scene (body/x05)
 
 #### Synopsis
 
-Scenes essentially define a hierarchy graph, using previously defined DasNode structures.
+Scenes essentially define a hierarchy graph, using previously defined das2::Node structures.
 
 #### Structure
 
@@ -137,7 +163,7 @@ Scenes essentially define a hierarchy graph, using previously defined DasNode st
 | u32       | uRootNodeCount | number of root nodes in a scene   | 0             | yes        |
 | [u32]     | pRootNodes     | array of root node IDs in a scene | []            | yes        |
 
-### DasSkeletonJoint (body/x06)
+### das2::SkeletonJoint (body/x06)
 
 #### Synopsis
 
@@ -156,7 +182,7 @@ Skeleton joints act as nodes for skeleton hierarchies
 | Vector3f   | vTranslation    | translation vector           | [ 0, 0, 0 ]       | yes        |
 | f32        | fScale          | scale property               | 1.f               | yes        |
 
-### DasSkeleton (body/x07)
+### das2::Skeleton (body/x07)
 
 #### Synopsis
 
@@ -172,11 +198,11 @@ Skeletons are used to form skeletal hierarchies that can be used for skeletal an
 | u32       | uJointCount   | number of skeleton joints | 0             | yes        |
 | [u32]     | uJoints       | array of skeleton joints  | []            | yes        |
 
-### DasAnimation (body/x08)
+### das2::Animation (body/x08)
 
 #### Synopsis
 
-DasAnimation structure is used to compose different animation channels.
+das2::Animation structure is used to compose different animation channels.
 
 #### Structure
 
@@ -186,7 +212,7 @@ DasAnimation structure is used to compose different animation channels.
 | u32       | uAnimationChannelCount | animation channel count        | 0             | yes        |
 | [u32]     | pAnimationChannels     | array of animation channel Ids | []            | yes        |
 
-### DasAnimationChannel (body/x09)
+### das2::AnimationChannel (body/x09)
 
 #### Synopsis
 
@@ -208,7 +234,7 @@ Animation channels contain information about animated properties on how the chan
 | [byte]    | pTargetValues      | byte array of animated property target values                                | []            | yes        |
 
 
-### DasMaterialPhong (body/x0a)
+### das2::MaterialPhong (body/x0a)
 
 #### Synopsis
 
@@ -225,11 +251,11 @@ Phong material defines properties for Blinn-Phong shading model.
 | String    | szDiffuseMap  | diffuse map uri      | nullstr        | yes        |
 | String    | szSpecularMap | specular map uri     | nullstr        | yes        |
 
-### DasMaterialPbr (body/x0b)
+### das2::MaterialPbr (body/x0b)
 
 #### Synopsis
 
-Pbr material structure defines properties for Physics Based Rendering model.
+PBR material structure defines properties for Physics Based Rendering model.
 
 #### Structure
 
