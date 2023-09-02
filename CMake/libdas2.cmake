@@ -16,3 +16,6 @@ else()
         ${DAS2_HEADERS}
         ${DAS2_SOURCES})
 endif()
+
+add_dependencies(${DAS2_TARGET} ${CVAR_TARGET})
+target_link_libraries(${DAS2_TARGET} ${CVAR_TARGET})

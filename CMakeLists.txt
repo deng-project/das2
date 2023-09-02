@@ -15,6 +15,7 @@ option(DAS2_BUILD_STATIC "Build static das2 library instead of dynamic one" OFF)
 option(DAS2_BUILD_DASTOOL "Build dastool" ON)
 
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/cvar)
 
 include(${CMAKE_CURRENT_SOURCE_DIR}/CMake/libdas2.cmake)
 

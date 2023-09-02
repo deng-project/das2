@@ -1,0 +1,6 @@
+[submodule "ThirdParty/vcpkg"]
+	path = ThirdParty/vcpkg
+	url = https://github.com/Microsoft/vcpkg
+[submodule "ThirdParty/cvar"]
+	path = ThirdParty/cvar
+	url = https://git.dengproject.org/deng/cvar
