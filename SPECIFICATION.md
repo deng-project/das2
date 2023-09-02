@@ -19,7 +19,7 @@ file that is not compressed at any zlib compression level. The other section of 
 format are so-called body formats. These various formats declare buffers, meshes, skeletons, materials,
 animations and so on.
 
-### DasHeader (head/x00) 
+### DasHeader (head/x0000000032736164) 
 
 #### Synopsis 
 
@@ -30,7 +30,6 @@ about the file itself.
 
 | Data type | Variable name      | Description                                 | Default value     | Modifiable  |
 |-----------|--------------------|---------------------------------------------|-------------------|-------------|
-| byte      | bStructure         | structure identifier                        | x00               | no          |
 | u64       | uMagic             | das2 magic bytes                            | x0000000032736164 | no          |
 | String    | szAuthorName       | author's name string                        | nullstr           | yes         |
 | String    | szComment          | misc comment string                         | nullstr           | yes         |
@@ -44,7 +43,7 @@ about the file itself.
 
 #### Synopsis
 
-Blob of data which contains various information about the mesh itself.
+Blob of data which contains various information about meshes itself.
 
 #### Structure
 
