@@ -12,11 +12,11 @@ set(CMAKE_CXX_STANDARD 17)
 
 option(DAS2_BUILD_DEMOS "Build all demo applications along with main das2 library" OFF)
 option(DAS2_BUILD_STATIC "Build static das2 library instead of dynamic one" OFF)
-option(DAS2_BUILD_DASTOOL "Build dastool" ON)
+option(DAS2_BUILD_DASTOOL "Build dastool" OFF)
 
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/cvar)
 
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/cvar)
 include(${CMAKE_CURRENT_SOURCE_DIR}/CMake/libdas2.cmake)
 
 if (DAS2_BUILD_DASTOOL)

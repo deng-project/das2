@@ -5,6 +5,12 @@ This documentation is mainly created for people implementing das2 into their pro
 
 ## Concepts
 
+### Strings
+
+String is denoted in this documentation as type `String`. The way strings are stored in das2 file
+is done by using following structure: `{ u16: uLength, [char] arrChars }`. Since string length parameter
+is given as 16bit integer, the maximum possible string size is 65 535 characters excluding trailing `\x00`.
+
 ### Matrices, quaternions and vectors
 
 Matrices are represented in row-major order as two dimentional arrays. Supported matrix types are 2x2, 3x3 and 4x4.
@@ -136,29 +142,30 @@ Mesh structure essentially describes the vertex attributes of a mesh and how it 
 
 #### Structure
 
-| Data type     | Variable name                     | Description                                 | Default value | Modifiable |
-|---------------|-----------------------------------|---------------------------------------------|---------------|------------|
-| byte          | bStructure                        | structure identifier                        | x02           | no         |
-| u32           | uIndexBufferId                    | ID of a buffer to use for indices data      | -1            | yes        |
-| u32           | uIndexBufferOffset                | offset of the index buffer                  | 0             | yes        |
-| u32           | uDrawCount                        | amount of vertices to draw                  | 0             | yes        |
-| u32           | uPositionVertexBufferId           | ID of a buffer to use for position vertices | -1            | yes        |
-| u32           | uPositionVertexBufferOffset       | offset of position buffer                   | 0             | yes        |
-| u32           | uSurfaceNormalBufferId            | ID of a buffer to use for surface normals   | -1            | yes        |
-| u32           | uSurfaceNormalBufferOffset        | offset of the surface normal buffer         | 0             | yes        |
-| u32[8]        | uUVBufferIds                      | array of UV coordinate buffer ids           | [-1]          | yes        |
-| u32[8]        | uUVBufferOffsets                  | array of UV coordinate buffer offsets       | [0]           | yes        |
-| u32           | uColorMultiplierId                | ID of a buffer to use for color multipliers | -1            | yes        |
-| u32           | uColorMultiplierOffset            | offset of the color multiplier buffer       | 0             | yes        |
-| u32[8]        | uSkeletalJointIndexBufferIds      | array of skeletal joint index sets indices  | [-1]          | yes        |
-| u32[8]        | uSkeletalJointIndexBufferOffsets  | array of skeletal joint index sets offsets  | [0]           | yes        |
-| u32[8]        | uSkeletalJointWeightBufferIds     | array of skeletal joint weight sets indices | [-1]          | yes        |
-| u32[8]        | uSkeletalJointWeightBufferOffsets | array of skeletal joint weight sets offsets | [0]           | yes        |
-| byte          | bMaterialType                     | Material type descriptor                    | x00           | yes        |
-| u32           | uMaterialId                       | ID of a material to use                     | -1            | yes        |
-| u32           | uMorphTargetCount                 | number of morph targets per mesh            | 0             | yes        |
-| [MorphTarget] | pMorphTargets                     | array of morph target structures            | []            | yes        |
-| u32           | uMultipleLodCount                 | 
+| Data type     | Variable name                       | Description                                 | Default value | Modifiable |
+|---------------|-------------------------------------|---------------------------------------------|---------------|------------|
+| byte          | bStructure                          | structure identifier                        | x02           | no         |
+| u32           | uIndexBufferId                      | ID of a buffer to use for indices data      | -1            | yes        |
+| u32           | uIndexBufferOffset                  | offset of the index buffer                  | 0             | yes        |
+| u32           | uDrawCount                          | amount of vertices to draw                  | 0             | yes        |
+| u32           | uPositionVertexBufferId             | ID of a buffer to use for position vertices | -1            | yes        |
+| u32           | uPositionVertexBufferOffset         | offset of position buffer                   | 0             | yes        |
+| u32           | uSurfaceNormalBufferId              | ID of a buffer to use for surface normals   | -1            | yes        |
+| u32           | uSurfaceNormalBufferOffset          | offset of the surface normal buffer         | 0             | yes        |
+| u32[8]        | arrUVBufferIds                      | array of UV coordinate buffer ids           | [-1]          | yes        |
+| u32[8]        | arrUVBufferOffsets                  | array of UV coordinate buffer offsets       | [0]           | yes        |
+| u32           | uColorMultiplierId                  | ID of a buffer to use for color multipliers | -1            | yes        |
+| u32           | uColorMultiplierOffset              | offset of the color multiplier buffer       | 0             | yes        |
+| u32[8]        | arrSkeletalJointIndexBufferIds      | array of skeletal joint index sets indices  | [-1]          | yes        |
+| u32[8]        | arrSkeletalJointIndexBufferOffsets  | array of skeletal joint index sets offsets  | [0]           | yes        |
+| u32[8]        | arrSkeletalJointWeightBufferIds     | array of skeletal joint weight sets indices | [-1]          | yes        |
+| u32[8]        | arrSkeletalJointWeightBufferOffsets | array of skeletal joint weight sets offsets | [0]           | yes        |
+| byte          | bMaterialType                       | Material type descriptor                    | x00           | yes        |
+| u32           | uMaterialId                         | ID of a material to use                     | -1            | yes        |
+| u32           | uMorphTargetCount                   | number of morph targets per mesh            | 0             | yes        |
+| [MorphTarget] | pMorphTargets                       | array of morph target structures            | []            | yes        |
+| u32           | uMultipleLodCount                   | number of LODs in mesh                      | 0             | yes        |
+| [Mesh]        | pMultipleLods                       | array of multiple LODs                      | []            | yes        |
 
 ### das2::MorphTarget (body/x03)
 
@@ -177,8 +184,8 @@ Morph targets are used to define possible variations of the same mesh.
 | u32       | uPositionVertexBufferOffset | offset of the position vertex buffer        | 0             | yes        |
 | u32       | uSurfaceNormalBufferId      | ID of a buffer to use for surface normals   | -1            | yes        |
 | u32       | uSurfaceNormalBufferOffset  | offset of the surface normal buffer         | 0             | yes        |
-| u32[8]    | uUVBufferIds                | array of UV coordinate buffer ids           | [-1]          | yes        |
-| u32[8]    | uUVBufferOffsets            | array of UV coordinate buffer offsets       | [0]           | yes        |
+| u32[8]    | arrUVBufferIds              | array of UV coordinate buffer ids           | [-1]          | yes        |
+| u32[8]    | arrUVBufferOffsets          | array of UV coordinate buffer offsets       | [0]           | yes        |
 | u32       | uColorMultiplierId          | ID of a buffer to use for color multipliers | -1            | yes        |
 | u32       | uColorMultiplierOffset      | offset of the color multiplier buffer       | 0             | yes        |
 
@@ -209,7 +216,7 @@ Nodes are used as building blocks to define scene hierarchy.
 |------------|------------------|-----------------------------------------|-------------------|------------|
 | byte       | bStructure       | structure identifier                    | x04               | no         |
 | String     | szName           | name of the node                        | nullstr           | yes        |
-| u32        | uChildrenCount   | number of children the node has         | 0                 | yes        |
+| u32        | uChildrenCount   | number of children ids the node has     | 0                 | yes        |
 | [u32]      | pChildren        | array of children the node has          | []                | yes        |
 | u32        | uMeshGroupId     | ID of a mesh group to bind to that node | -1                | yes        |
 | u32        | uSkeletonId      | ID of a skeleton to bind to that node   | -1                | yes        |
@@ -266,7 +273,7 @@ Skeletons are used to form skeletal hierarchies that can be used for skeletal an
 | String    | szName        | name of the skeleton      | nullstr       | yes        |
 | u32       | uParent       | parent joint id           | -1            | yes        |
 | u32       | uJointCount   | number of skeleton joints | 0             | yes        |
-| [u32]     | uJoints       | array of skeleton joints  | []            | yes        |
+| [u32]     | pJoints       | array of skeleton joints  | []            | yes        |
 
 ### das2::Animation (body/x09)
 

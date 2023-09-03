@@ -4,3 +4,6 @@
 [submodule "ThirdParty/cvar"]
 	path = ThirdParty/cvar
 	url = https://git.dengproject.org/deng/cvar
+[submodule "ThirdParty/trs-headers"]
+	path = ThirdParty/trs-headers
+	url = https://git.dengproject.org/deng/trs-headers
