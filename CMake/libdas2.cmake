@@ -11,6 +11,12 @@ set(DAS2_HEADERS
 set(DAS2_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/Sources/Serializer.cpp)
 
+# Converter support
+if (DAS2_WAVEFRONT_OBJ)
+    list(APPEND DAS2_HEADERS 
+        ${CMAKE_CURRENT_SOURCE_DIR}/Include/das2/obj/Data.h)
+endif()
+
 if (NOT DAS2_BUILD_STATIC)
     add_library(${DAS2_TARGET} SHARED
         ${DAS2_HEADERS}

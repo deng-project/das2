@@ -14,88 +14,125 @@
 
 namespace das2 {
     namespace obj {
+        enum class KeywordToken {
+            GeometryVertex,         // v
+            TextureVertex,          // vt
+            VertexNormal,           // vn
+            ParameterSpaceVertex,   // vp
+            CSType,                 // cstype
+            Degree,                 // deg
+            BasisMatrix,            // bmat
+            StepSize,               // step
+            Point,                  // p
+            Line,                   // l
+            Face,                   // f
+            Curve,                  // curv
+            Curve2D,                // curv2
+            Surface,                // surf
+            ParameterValues,        // parm
+            OuterTrimmingLoop,      // trim
+            InnerTrimmingLoop,      // hole
+            SpecialCurve,           // scrv
+            SpecialPoint,           // sp
+            EndStatement,           // end
+            Connect,                // con
+            GroupName,              // g
+            SmoothingGroup,         // s
+            MergingGroup,           // mg
+            ObjectName,             // o
+            BevelInterp,            // bevel
+            ColorInterpolation,     // c_interp
+            DissolveInterpolation,  // d_interp,
+            LevelOfDetail,          // lod
+            MaterialName,           // usemtl
+            MaterialLibrary,        // mtllib
+            ShadowCasting,          // shadow_obj
+            RayTracing,             // trace_obj
+            CurveApprox,            // ctech
+            SurfaceApprox,          // stech
+        };
+
         struct Vertices {
-            std::vector<TRS::Vector4<float>> geometricVertices;     // v
-            std::vector<TRS::Vector3<float>> paramSpaceVertices;    // vp
+            std::vector<TRS::Vector4<float>> geometricVertices;     // v 
             std::vector<TRS::Vector3<float>> vertexNormals;         // vn
             std::vector<TRS::Vector3<float>> textureVertices;       // vt
         };
 
-        // cstype property
-        enum class FreeFormGeometryType {
-            Unknown,
-            BasisMatrix,
-            Bezier,
-            BSpline,
-            Cardinal,
-            Taylor
-        };
-
-        // free-form curve/surface attributes
-        struct FreeFormAttributes {
-            FreeFormGeometryType geomType = FreeFormGeometryType::Unknown;
-            TRS::Vector2<float> vDegree;
-            std::array<TRS::Matrix4<float>, 2> mBasis; // [0] - u dir; [1] - v dir
-            TRS::Vector2<float> vStep;
-        };
-
-        struct Curve {
-            TRS::Point2D<float> params;
-            std::vector<uint32_t> controlVertices;
-        };
-
-        struct Surface {
-            std::pair<float, float> fS;
-            std::pair<float, float> fT;
-            std::vector<TRS::Point3D<uint32_t>> controlVertices;
-        };
-
         // elements are referencing vertices
         struct Elements {
-            std::vector<uint32_t> points;                   // points       (p)
-            std::vector<TRS::Point2D<uint32_t>> lines;      // line         (l)
-            std::vector<TRS::Point3D<uint32_t>> faces;      // face         (f)
-            std::vector<Curve> curves;                      // curve        (curv)
-            std::vector<std::vector<uint32_t>> curves2D;    // 2D curve     (curv2)
-            std::vector<Surface> surfaces;                  // surface      (surf)
+            std::vector<TRS::Point3D<uint32_t>> faces;      // f
+        };
+
+        struct Group {
+            std::vector<BinString> groups;  // g
+            BinString sMaterialName;        // material name                    (usemtl)
+            bool bSmoothing;                // s
+            Elements elements;              // (structural)
+        };
+
+        enum class MTLToken {
+            Phong_Ambient,          // Ka
+            Phong_Diffuse,          // Kd
+            Phong_Specular,         // Ks
+            Phong_SpecularExp,      // Ns
+            Transparency,           // d
+            Phong_AmbientMapUri,    // map_Ka
+            Phong_DiffuseMapUri,    // map_Kd
+            Phong_SpecularMapUri,   // map_Ks
+            Phong_SpecularExpUri,   // map_Ns
+            TransparencyMapUri,     // map_d
+
+            PBR_Roughness,          // Pr
+            PBR_Metallic,           // Pm
+            PBR_Sheen,              // Ps
+            PBR_ClearcoatThickness, // Pc
+            PBR_ClearcoatRoughness, // Pcr
+            PBR_Emissive,           // Ke
+            PBR_Anisotropy,         // aniso
+            PBR_AnisotropyRotation, // anisor
+            PBR_RoughnessMapUri,    // map_Pr
+            PBR_MetallicMapUri,     // map_Pm
+            PBR_SheenMapUri,        // map_Ps
+            PBR_EmissionMapUri,     // map_Ke
+            PBR_NormalMapUri        // norm
         };
 
 
-        struct Curve2D {
-            std::pair<float, float> fU;
-            uint32_t uCurv2D;
+        struct Material {
+            /* Blinn/Phong shading model */
+            TRS::Vector3<float> vKa;    // Blinn/Phong shading ambient color
+            TRS::Vector3<float> vKd;    // Blinn/Phong shading diffuse color
+            TRS::Vector3<float> vKs;    // Blinn/Phong shading specular color
+            float fNs = 1.f;            // Blinn/Phong shading specular exponent
+            float fD = 1.f;             // Transparency parameter
+            BinString szMapKaUri = "";  // Blinn/Phong shading ambient map uri
+            BinString szMapKdUri = "";  // Blinn/Phong shading diffuse map uri
+            BinString szMapKsUri = "";  // Blinn/Phong shading specular map uri
+            BinString szMapNsUri = "";  // Blinn/Phong shading specular exponent map uri
+            BinString szMapDUri = "";   // Transparency parameter map uri
+
+            /* PBR shading model */
+            float fPr;                          // PBR roughness parameter
+            float fPm;                          // PBR metallic parameter
+            float fSheen;                       // PBR sheen parameter
+            float fPc;                          // PBR clearcoat thickness
+            float fPcr;                         // PBR clearcoat roughness
+            TRS::Vector3<float> vEmissive;      // PBR emissive component
+            float fAnisotropy;                  // PBR anisotropy parameter
+            float fAnisor;                      // PBR anisotropy rotation
+
+            BinString szMapPrUri = "";          // PBR roughness map uri
+            BinString szMapPmUri = "";          // PBR metallic map uri
+            BinString szMapSheenUri = "";       // PBR sheen map uri
+            BinString szEmissionMapUri = "";    // PBR emissive map
+            BinString szNormalMapUri = "";      // PBR normal map
         };
 
-        struct FreeFormBodyAttributes {
-            std::vector<std::vector<float>> parametersU;            // parameter values (parm) u coordinate
-            std::vector<std::vector<float>> parametersV;            // parameter values (parm) v coordinate
-            std::vector<std::vector<Curve2D>> outerTrimmingLoops;     // outer trimming loop (trim)
-            std::vector<std::vector<Curve2D>> innerTrimmingLoops;     // inner trimming loop (hole)
-            std::vector<std::vector<Curve2D>> specialCurves;          // special curve (scrv)
-            std::vector<std::vector<uint32_t>> specialPoints;       // special point (sp)
-        };
 
-        // connectivity (con)
-        
-        struct Grouping {
-            // group name       (g)
-            // smoothing group  (s)
-            // merging group    (mg)
-            // object name      (o)
-        };
-
-
-        struct RenderAttributes {
-            // bevel interpolation              (bevel)
-            // color interpolation              (c_interp)
-            // dissolve interpolation           (d_interp)
-            // level of detail                  (lod)
-            // material name                    (usemtl)
-            // material library                 (mtllib)
-            // shadow casting                   (shadow_obj)
-            // ray tracing                      (trace_obj)
-            // curve approximation technique    (ctech)
-            // surface approximation technique  (stech)
+        struct Object {
+            Vertices vertices;
+            std::vector<Group> groups;
+            std::unordered_map<BinString, Material> materials;
         };
     }
 }
