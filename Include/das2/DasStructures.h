@@ -87,6 +87,19 @@ namespace das2 {
                 return m_hshString;
             }
     };
+}
+
+
+namespace std {
+    template<>
+    struct hash<das2::BinString> {
+        bool operator()(const das2::BinString& _str) const {
+            return _str.Hash();
+        }
+    };
+}
+
+namespace das2 {
 
     enum StructureIdentifier : char {
         StructureIdentifier_Unknown = 0x00,

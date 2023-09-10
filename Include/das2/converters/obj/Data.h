@@ -8,9 +8,13 @@
 #include <cstdint>
 #include <array>
 #include <vector>
+#include <unordered_map>
+
 #include <trs/Vector.h>
 #include <trs/Matrix.h>
 #include <trs/Points.h>
+
+#include <das2/DasStructures.h>
 
 namespace das2 {
     namespace obj {
@@ -40,7 +44,7 @@ namespace das2 {
             SmoothingGroup,         // s
             MergingGroup,           // mg
             ObjectName,             // o
-            BevelInterp,            // bevel
+            BevelInterpolation,     // bevel
             ColorInterpolation,     // c_interp
             DissolveInterpolation,  // d_interp,
             LevelOfDetail,          // lod
