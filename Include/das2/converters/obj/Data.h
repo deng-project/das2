@@ -18,7 +18,7 @@
 
 namespace das2 {
     namespace obj {
-        enum class KeywordToken {
+        enum class KeywordToken : unsigned char {
             GeometryVertex,         // v
             TextureVertex,          // vt
             VertexNormal,           // vn
@@ -64,17 +64,18 @@ namespace das2 {
 
         // elements are referencing vertices
         struct Elements {
-            std::vector<TRS::Point3D<uint32_t>> faces;      // f
+            std::vector<std::vector<TRS::Point3D<uint32_t>>> faces;      // f
         };
 
         struct Group {
-            std::vector<BinString> groups;  // g
-            BinString sMaterialName;        // material name                    (usemtl)
-            bool bSmoothing;                // s
-            Elements elements;              // (structural)
+            BinString szMaterialName = "";          // (structural)
+            std::vector<BinString> groupNames;      // g
+            BinString sMaterialName;                // usemtl
+            bool bSmoothing;                        // s
+            Elements elements;                      // (structural)
         };
 
-        enum class MTLToken {
+        enum class MTLToken : unsigned char {
             Phong_Ambient,          // Ka
             Phong_Diffuse,          // Kd
             Phong_Specular,         // Ks
@@ -100,7 +101,6 @@ namespace das2 {
             PBR_EmissionMapUri,     // map_Ke
             PBR_NormalMapUri        // norm
         };
-
 
         struct Material {
             /* Blinn/Phong shading model */

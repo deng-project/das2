@@ -5,6 +5,8 @@
 
 #pragma once
 
+#include <sstream>
+#include <string>
 #include <cvar/ISerializer.h>
 #include <das2/Api.h>
 #include <das2/converters/obj/Data.h>
@@ -15,16 +17,17 @@ namespace das2 {
 
         template <typename T>
         struct Token {
-            std::variant<std::monostate, T, float, uint32_t, BinString> m_token = std::monostate{};
-            uint32_t m_uLine = 1;
+            std::variant<std::monostate, T, BinString> token = std::monostate{};
+            uint32_t uLine = 1;
         };
 
-        enum TokenType : size_t {
-            TokenType_Unknown,
-            TokenType_Keyword,
-            TokenType_Float,
-            TokenType_Int,
-            TokenType_String
+        std::ostream& operator<<(std::ostream& _stream, std::variant<std::monostate, KeywordToken, BinString>& _val);
+        std::ostream& operator<<(std::ostream& _stream, std::variant<std::monostate, MTLToken, BinString>& _val);
+
+        enum TokenIndex : size_t {
+            TokenIndex_Unknown,
+            TokenIndex_Keyword,
+            TokenIndex_String
         };
 
         class DAS2_API UnserializerMtl : public CVar::IUnserializer<Material> {
@@ -57,9 +60,12 @@ namespace das2 {
                 };
         };
 
+
         class DAS2_API Unserializer : public CVar::IUnserializer<Object>  {
             private:
                 Token<KeywordToken> m_token;
+                uint32_t m_uLineCounter = 1;
+                bool m_bTokenRead = false;  // internal state
 
                 const std::unordered_map<BinString, KeywordToken> m_cObjKeywords = {
                     { "v", KeywordToken::GeometryVertex },
@@ -99,8 +105,63 @@ namespace das2 {
                     { "stech", KeywordToken::SurfaceApprox }
                 };
 
+
             private:
+                std::optional<KeywordToken> _TokenizeKeyword();
+                bool _NextToken();
+                void _SkipToNextKeyword();
+                void _ReadFace();
+                void _ReadSmoothing();
+                void _ReadGroup();
+                void _ReadMaterialName();
+                void _ReadMaterialLibrary();
                 void _ParseObj();
+
+                template <typename T>
+                bool _TryValueTokenization(const std::optional<T>& _token) {
+                    if (_token.has_value()) {
+                        m_token.token = _token;
+                        m_token.uLine = m_uLineCounter;
+                        return true;
+                    }
+
+                    return false;
+                }
+
+                // _uMin: minimum required elements to fill
+                template <typename T>
+                T _ReadVector(size_t _uMin, size_t _uN) {
+                    T vec;
+                    uint32_t uLastLine = 1;
+
+                    size_t i = 0;
+                    for (i = 0; i < _uN; i++) {
+                        uLastLine = m_token.uLine;
+                        if (!_NextToken()) {
+                            break;
+                        }
+
+                        if (m_token.token.index() != TokenIndex_String && i < _uMin) {
+                            std::stringstream ss;
+                            ss << "Wavefront obj: Invalid token '" << m_token.token << "' at line " << m_token.uLine;
+                            throw CVar::SyntaxErrorException(ss.str());
+                        } else if (i >= _uMin) {
+                            break;
+                        }
+
+                        vec[i] = static_cast<decltype(T::operator[])>(std::stof(std::get<TokenIndex_String>(m_token.token).CString()));
+                    }
+
+                    if (i < _uMin) {
+                        std::stringstream ss;
+                        ss << "Wavefront obj: Unexpected end of file at line " << m_token.uLine;
+                        throw CVar::UnexpectedEOFException(ss.str());
+                    } else if (i == _uN) {
+                        _NextToken();
+                    }
+                    
+                    return vec;
+                }
 
             public:
                 Unserializer(std::istream& _stream);

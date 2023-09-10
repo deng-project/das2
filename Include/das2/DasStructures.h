@@ -57,7 +57,7 @@ namespace das2 {
                 std::memcpy(m_pData, _str.m_pData, m_uLength);
             }
 
-            BinString(BinString&& _str) :
+            BinString(BinString&& _str) noexcept :
                 m_uLength(_str.m_uLength),
                 m_pData(_str.m_pData),
                 m_hshString(_str.m_hshString)
@@ -65,6 +65,14 @@ namespace das2 {
                 _str.m_uLength = 0;
                 _str.m_pData = nullptr;
                 _str.m_hshString = 0;
+            }
+
+            BinString& operator=(const BinString& _other) {
+                m_uLength = _other.m_uLength;
+                m_hshString = _other.m_hshString;
+                m_pData = new char[m_uLength+1]{};
+                std::memcpy(m_pData, _other.m_pData, m_uLength);
+                return *this;
             }
 
             inline bool operator==(const BinString& _str) const {
