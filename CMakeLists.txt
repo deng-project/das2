@@ -35,4 +35,5 @@ endif()
 
 if (DAS2_BUILD_DEMOS)
     message(STATUS "Adding demo build configurations")
+    include(${CMAKE_CURRENT_SOURCE_DIR}/CMake/Demos/ParseWavefrontObj.cmake)
 endif()

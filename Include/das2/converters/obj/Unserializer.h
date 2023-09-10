@@ -120,7 +120,7 @@ namespace das2 {
                 template <typename T>
                 bool _TryValueTokenization(const std::optional<T>& _token) {
                     if (_token.has_value()) {
-                        m_token.token = _token;
+                        m_token.token = _token.value();
                         m_token.uLine = m_uLineCounter;
                         return true;
                     }
@@ -149,7 +149,7 @@ namespace das2 {
                             break;
                         }
 
-                        vec[i] = static_cast<decltype(T::operator[])>(std::stof(std::get<TokenIndex_String>(m_token.token).CString()));
+                        vec[i] = static_cast<decltype(vec.first)>(std::stof(std::get<TokenIndex_String>(m_token.token).CString()));
                     }
 
                     if (i < _uMin) {

@@ -75,6 +75,19 @@ namespace das2 {
             _ParseObj();
         }
 
+        std::optional<KeywordToken> Unserializer::_TokenizeKeyword() {
+            std::optional<KeywordToken> optToken = std::nullopt;
+
+            std::string stdStr;
+            while (m_stream.peek() != -1 && !_Contains(m_stream.peek(), " \t\n\r", 4))
+                stdStr += static_cast<char>(m_stream.get());
+
+            BinString str = stdStr;
+            if (m_cObjKeywords.find(str) != m_cObjKeywords.end())
+                optToken = m_cObjKeywords.find(str)->second;
+
+            return optToken;
+        }
 
         bool Unserializer::_NextToken() {
             m_token.token = std::monostate{};
@@ -106,6 +119,48 @@ namespace das2 {
             while ((m_bTokenRead = _NextToken())) {
                 if (m_token.token.index() == TokenIndex_Keyword)
                     break;
+            }
+        }
+
+        void Unserializer::_ReadFace() {
+            size_t i = 0;
+            while ((m_bTokenRead = _NextToken())) {
+                m_root.groups.back().elements.faces.back().emplace_back(-1, -1, -1);
+                auto& face = m_root.groups.back().elements.faces.back().back();
+
+                if (m_token.token.index() != TokenIndex_String)
+                    break;
+                
+                std::string stdStrFace = std::get<BinString>(m_token.token).CString();
+                size_t delims[2] = { static_cast<size_t>(-1), static_cast<size_t>(-1) };
+
+                delims[0] = stdStrFace.find('/', 0);
+
+                if (delims[0] != std::string::npos)
+                    delims[1] = stdStrFace.find('/', delims[0]+1);
+                
+                // extract indices
+                if (delims[0] != std::string::npos) {
+                    face.x = std::stoi(stdStrFace.substr(0, delims[0]));
+                    if (delims[1] != std::string::npos) {
+                        if (delims[1] - delims[0] > 1)
+                            face.y = std::stoi(stdStrFace.substr(delims[0]+1, delims[1] - delims[0] - 1));
+                        if (stdStrFace.size() - delims[1] > 1)
+                            face.z = std::stoi(stdStrFace.substr(delims[1]+1));
+                    }
+                    else if (stdStrFace.size() - delims[0] > 1) {
+                        face.y = std::stoi(stdStrFace.substr(delims[0]+1));
+                    }
+                } else {
+                    face.x = std::stoi(stdStrFace);
+                }
+            }
+
+            // at least three vertices are needed for a face
+            if (i < 3) {
+                std::stringstream ss;
+                ss << "Wavefront obj: At least 3 vertices are needed to construct a face at line " << m_token.uLine;
+                throw CVar::SyntaxErrorException(ss.str());
             }
         }
 

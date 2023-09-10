@@ -70,7 +70,6 @@ namespace das2 {
         struct Group {
             BinString szMaterialName = "";          // (structural)
             std::vector<BinString> groupNames;      // g
-            BinString sMaterialName;                // usemtl
             bool bSmoothing;                        // s
             Elements elements;                      // (structural)
         };

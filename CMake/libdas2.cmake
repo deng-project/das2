@@ -9,6 +9,7 @@ set(DAS2_HEADERS
     ${CMAKE_CURRENT_SOURCE_DIR}/Include/das2/DasStructures.h
     ${CMAKE_CURRENT_SOURCE_DIR}/Include/das2/Serializer.h)
 set(DAS2_SOURCES
+    ${CMAKE_CURRENT_SOURCE_DIR}/Sources/DasStructures.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Sources/Serializer.cpp)
 
 # Converter support
@@ -16,6 +17,8 @@ if (DAS2_WAVEFRONT_OBJ)
     list(APPEND DAS2_HEADERS 
         ${CMAKE_CURRENT_SOURCE_DIR}/Include/das2/converters/obj/Data.h
         ${CMAKE_CURRENT_SOURCE_DIR}/Include/das2/converters/obj/Unserializer.h)
+    list(APPEND DAS2_SOURCES
+        ${CMAKE_CURRENT_SOURCE_DIR}/Sources/converters/obj/Unserializer.cpp)
 endif()
 
 if (NOT DAS2_BUILD_STATIC)
@@ -31,7 +34,7 @@ endif()
 add_dependencies(${DAS2_TARGET} cvar)
 find_package(ZLIB REQUIRED)
 target_link_libraries(${DAS2_TARGET} 
-    PUBLIC ${CVAR_TARGET}
+    PUBLIC cvar
     PRIVATE ZLIB::ZLIB)
 
 target_include_directories(${DAS2_TARGET}
