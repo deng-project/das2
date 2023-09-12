@@ -16,10 +16,10 @@ namespace das2 {
             try {
                 m_pUnserializer = new obj::Unserializer(stream);
             } catch (CVar::SyntaxErrorException& e) {
-                std::cerr << e.what();
+                std::cerr << "[SyntaxErrorException] " << e.what() << '\n';
                 std::exit(1);
             } catch (CVar::UnexpectedEOFException& e) {
-                std::cerr << e.what();
+                std::cerr << "[UnexpectedEOFException] " << e.what() << '\n';
                 std::exit(2);
             }
 
@@ -59,8 +59,8 @@ namespace das2 {
                     std::cout << it2->CString();
                     if (std::next(it2) != it->groupNames.end())
                         std::cout << ',';
-                    else std::cout << "]\n"; 
                 }
+                std::cout << "]\n";
                 std::cout << "bSmoothing: " << (it->bSmoothing ? "true\n" : "false\n");
                 std::cout << "elements:\n";
 
@@ -78,6 +78,7 @@ namespace das2 {
 
     }
 }
+
 
 int main(int argc, char* argv[]) {
     if (argc < 2) {

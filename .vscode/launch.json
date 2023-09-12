@@ -5,11 +5,21 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "type": "gdb",
+            "request": "launch",
+            "name": "ParseWavefrontObj",
+            "target": "${workspaceFolder}/Build/ParseWavefrontObj",
+            "arguments": "/mnt/Important/Documents/Models/wavefront_obj/obj/airboat.obj",
+            "cwd": "${workspaceFolder}",
+            "valuesFormatting": "parseText"
+        },
+
+        {
             "type": "lldb",
             "request": "launch",
             "name": "Debug",
             "program": "${workspaceFolder}/Build/ParseWavefrontObj",
-            "args": [],
+            "args": ["/mnt/Important/Documents/Models/wavefront_obj/obj/airboat.obj"],
             "cwd": "${workspaceFolder}"
         }
     ]

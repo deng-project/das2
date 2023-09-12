@@ -23,6 +23,7 @@ namespace das2 {
             return arrLookup[static_cast<size_t>(_token)];
         }
 
+
         const char* _MTLTokenToString(MTLToken _token) {
             const char* arrLookup[] = {
                 "Ka", "Kd", "Ks", "Ns", "d", "map_Ka",
@@ -35,6 +36,7 @@ namespace das2 {
             return arrLookup[static_cast<size_t>(_token)];
         }
 
+
         std::ostream& operator<<(std::ostream& _stream, std::variant<std::monostate, KeywordToken, BinString>& _val) {
             switch (_val.index()) {
                 case TokenIndex_Keyword:
@@ -42,7 +44,7 @@ namespace das2 {
                     break;
 
                 case TokenIndex_String:
-                    _stream << std::get<TokenIndex_String>(_val);
+                    _stream << std::get<TokenIndex_String>(_val).CString();
                     break;
 
                 default:
@@ -52,6 +54,7 @@ namespace das2 {
             return _stream;
         }
 
+
         std::ostream& operator<<(std::ostream& _stream, std::variant<std::monostate, MTLToken, BinString>& _val) {
             switch (_val.index()) {
                 case TokenIndex_Keyword:
@@ -59,7 +62,7 @@ namespace das2 {
                     break;
 
                 case TokenIndex_String:
-                    _stream << std::get<TokenIndex_String>(_val);
+                    _stream << std::get<TokenIndex_String>(_val).CString();
                     break;
 
                 default:
@@ -68,26 +71,32 @@ namespace das2 {
 
             return _stream;
         }
-        
+
+
         Unserializer::Unserializer(std::istream& _stream) :
             CVar::IUnserializer<Object>(_stream) 
         {
             _ParseObj();
         }
 
-        std::optional<KeywordToken> Unserializer::_TokenizeKeyword() {
-            std::optional<KeywordToken> optToken = std::nullopt;
 
+        std::optional<KeywordToken> Unserializer::_TokenizeKeyword() {
             std::string stdStr;
             while (m_stream.peek() != -1 && !_Contains(m_stream.peek(), " \t\n\r", 4))
                 stdStr += static_cast<char>(m_stream.get());
 
             BinString str = stdStr;
             if (m_cObjKeywords.find(str) != m_cObjKeywords.end())
-                optToken = m_cObjKeywords.find(str)->second;
+                return m_cObjKeywords.find(str)->second;
 
-            return optToken;
+            while (!stdStr.empty()) {
+                m_stream.unget();
+                stdStr.pop_back();
+            }
+
+            return std::nullopt;
         }
+
 
         bool Unserializer::_NextToken() {
             m_token.token = std::monostate{};
@@ -115,6 +124,16 @@ namespace das2 {
             return false;
         }
 
+
+        void Unserializer::_SkipLine() {
+            while (m_stream.peek() != -1 && m_stream.peek() != '\n') {
+                static_cast<void>(m_stream.get());
+            }
+
+            m_bTokenRead = _NextToken();
+        }
+
+
         void Unserializer::_SkipToNextKeyword() {
             while ((m_bTokenRead = _NextToken())) {
                 if (m_token.token.index() == TokenIndex_Keyword)
@@ -122,14 +141,15 @@ namespace das2 {
             }
         }
 
+
         void Unserializer::_ReadFace() {
             size_t i = 0;
             while ((m_bTokenRead = _NextToken())) {
-                m_root.groups.back().elements.faces.back().emplace_back(-1, -1, -1);
-                auto& face = m_root.groups.back().elements.faces.back().back();
-
                 if (m_token.token.index() != TokenIndex_String)
                     break;
+
+                m_root.groups.back().elements.faces.back().emplace_back(-1, -1, -1);
+                auto& face = m_root.groups.back().elements.faces.back().back();
                 
                 std::string stdStrFace = std::get<BinString>(m_token.token).CString();
                 size_t delims[2] = { static_cast<size_t>(-1), static_cast<size_t>(-1) };
@@ -154,6 +174,8 @@ namespace das2 {
                 } else {
                     face.x = std::stoi(stdStrFace);
                 }
+
+                i++;
             }
 
             // at least three vertices are needed for a face
@@ -163,6 +185,7 @@ namespace das2 {
                 throw CVar::SyntaxErrorException(ss.str());
             }
         }
+
 
         void Unserializer::_ReadSmoothing() {
             m_bTokenRead = _NextToken();
@@ -178,12 +201,16 @@ namespace das2 {
 
             if (std::get<TokenIndex_String>(m_token.token) != "off" && std::stoi(std::get<TokenIndex_String>(m_token.token).CString()) > 0)
                 m_root.groups.back().bSmoothing = true;
+
+            m_bTokenRead = _NextToken();
         }
+
 
         void Unserializer::_ReadGroup() {
             while ((m_bTokenRead = _NextToken()) && m_token.token.index() == TokenIndex_String)
                 m_root.groups.back().groupNames.push_back(std::get<TokenIndex_String>(m_token.token));
         }
+
 
         void Unserializer::_ReadMaterialName() {
             uint32_t uPrevLine = m_token.uLine;
@@ -200,7 +227,10 @@ namespace das2 {
             }
 
             m_root.groups.back().szMaterialName = std::get<TokenIndex_String>(m_token.token);
+
+            m_bTokenRead = _NextToken();
         }
+
 
         void Unserializer::_ReadMaterialLibrary() {
             while ((m_bTokenRead = _NextToken())) {
@@ -212,6 +242,7 @@ namespace das2 {
             }
         }
 
+
         void Unserializer::_ParseObj() {
             m_bTokenRead = _NextToken();
             m_root.groups.emplace_back();
@@ -219,12 +250,16 @@ namespace das2 {
             while (m_bTokenRead) {
                 if (m_token.token.index() != TokenIndex_Keyword) {
                     std::stringstream ss;
-                    ss << "Wavefront obj: Unexpected token '" << m_token.token << "'";
-                    CVar::SyntaxErrorException(ss.str());
+                    ss << "Wavefront obj: Unexpected token '" << m_token.token << "' at line " << m_token.uLine;
+                    throw CVar::SyntaxErrorException(ss.str());
                 }
 
                 KeywordToken kwToken = std::get<KeywordToken>(m_token.token);
                 switch (kwToken) {
+                    case KeywordToken::Comment:
+                        _SkipLine();
+                        break;
+
                     case KeywordToken::GeometryVertex:
                         m_root.vertices.geometricVertices.push_back(_ReadVector<TRS::Vector4<float>>(3, 4));
                         break;
@@ -244,7 +279,8 @@ namespace das2 {
 
                     case KeywordToken::GroupName:
                     case KeywordToken::ObjectName:
-                        m_root.groups.emplace_back();
+                        if (!m_root.groups.back().elements.faces.empty())
+                            m_root.groups.emplace_back();
                         _ReadGroup();
                         break;
 

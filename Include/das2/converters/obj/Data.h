@@ -19,6 +19,7 @@
 namespace das2 {
     namespace obj {
         enum class KeywordToken : unsigned char {
+            Comment,                // #
             GeometryVertex,         // v
             TextureVertex,          // vt
             VertexNormal,           // vn

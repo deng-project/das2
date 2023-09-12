@@ -68,6 +68,7 @@ namespace das2 {
                 bool m_bTokenRead = false;  // internal state
 
                 const std::unordered_map<BinString, KeywordToken> m_cObjKeywords = {
+                    { "#", KeywordToken::Comment },
                     { "v", KeywordToken::GeometryVertex },
                     { "vt", KeywordToken::TextureVertex },
                     { "vn", KeywordToken::VertexNormal },
@@ -109,6 +110,7 @@ namespace das2 {
             private:
                 std::optional<KeywordToken> _TokenizeKeyword();
                 bool _NextToken();
+                void _SkipLine();
                 void _SkipToNextKeyword();
                 void _ReadFace();
                 void _ReadSmoothing();
