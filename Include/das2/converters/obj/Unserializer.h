@@ -8,6 +8,7 @@
 #include <sstream>
 #include <string>
 #include <cvar/ISerializer.h>
+#include <cvar/SerializerExceptions.h>
 #include <das2/Api.h>
 #include <das2/converters/obj/Data.h>
 #include <variant>
@@ -30,7 +31,7 @@ namespace das2 {
             TokenIndex_String
         };
 
-        class DAS2_API UnserializerMtl : public CVar::IUnserializer<Material> {
+        class DAS2_API UnserializerMtl : public cvar::IPlainTextUnserializer<Material> {
             private:
                 Token<MTLToken> m_token;
                 const std::unordered_map<BinString, MTLToken> m_cMTLKeywords = {
@@ -61,7 +62,7 @@ namespace das2 {
         };
 
 
-        class DAS2_API Unserializer : public CVar::IUnserializer<Object>  {
+        class DAS2_API Unserializer : public cvar::IPlainTextUnserializer<Object>  {
             private:
                 Token<KeywordToken> m_token;
                 uint32_t m_uLineCounter = 1;
@@ -146,7 +147,7 @@ namespace das2 {
                         if (m_token.token.index() != TokenIndex_String && i < _uMin) {
                             std::stringstream ss;
                             ss << "Wavefront obj: Invalid token '" << m_token.token << "' at line " << m_token.uLine;
-                            throw CVar::SyntaxErrorException(ss.str());
+                            throw cvar::SyntaxErrorException(ss.str());
                         } else if (i >= _uMin) {
                             break;
                         }
@@ -157,7 +158,7 @@ namespace das2 {
                     if (i < _uMin) {
                         std::stringstream ss;
                         ss << "Wavefront obj: Unexpected end of file at line " << m_token.uLine;
-                        throw CVar::UnexpectedEOFException(ss.str());
+                        throw cvar::UnexpectedEOFException(ss.str());
                     } else if (i == _uN) {
                         _NextToken();
                     }

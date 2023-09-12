@@ -26,7 +26,7 @@ namespace das2 {
     class BinString {
         private:
             uint16_t m_uLength = 0;
-            CVar::hash_t m_hshString = 0;
+            cvar::hash_t m_hshString = 0;
             char* m_pData = nullptr;
 
         public:
@@ -91,7 +91,7 @@ namespace das2 {
                 return m_uLength;
             }
 
-            inline CVar::hash_t Hash() const {
+            inline cvar::hash_t Hash() const {
                 return m_hshString;
             }
     };

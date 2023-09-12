@@ -15,10 +15,10 @@ namespace das2 {
 
             try {
                 m_pUnserializer = new obj::Unserializer(stream);
-            } catch (CVar::SyntaxErrorException& e) {
+            } catch (cvar::SyntaxErrorException& e) {
                 std::cerr << "[SyntaxErrorException] " << e.what() << '\n';
                 std::exit(1);
-            } catch (CVar::UnexpectedEOFException& e) {
+            } catch (cvar::UnexpectedEOFException& e) {
                 std::cerr << "[UnexpectedEOFException] " << e.what() << '\n';
                 std::exit(2);
             }

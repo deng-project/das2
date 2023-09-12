@@ -74,7 +74,7 @@ namespace das2 {
 
 
         Unserializer::Unserializer(std::istream& _stream) :
-            CVar::IUnserializer<Object>(_stream) 
+            cvar::IPlainTextUnserializer<Object>(_stream) 
         {
             _ParseObj();
         }
@@ -120,7 +120,7 @@ namespace das2 {
 
             std::stringstream ss;
             ss << "Wavefront obj: Unexpected symbol '" << static_cast<char>(m_stream.peek()) << "'at line " << m_uLineCounter;
-            throw CVar::SyntaxErrorException(ss.str());
+            throw cvar::SyntaxErrorException(ss.str());
             return false;
         }
 
@@ -182,7 +182,7 @@ namespace das2 {
             if (i < 3) {
                 std::stringstream ss;
                 ss << "Wavefront obj: At least 3 vertices are needed to construct a face at line " << m_token.uLine;
-                throw CVar::SyntaxErrorException(ss.str());
+                throw cvar::SyntaxErrorException(ss.str());
             }
         }
 
@@ -191,12 +191,12 @@ namespace das2 {
             m_bTokenRead = _NextToken();
 
             if (!m_bTokenRead) 
-                throw CVar::UnexpectedEOFException("No more tokens to validate Wavefront obj syntax");
+                throw cvar::UnexpectedEOFException("No more tokens to validate Wavefront obj syntax");
             
             if (m_token.token.index() != TokenIndex_String) {
                 std::stringstream ss;
                 ss << "Wavefront obj: Invalid identifier '" << m_token.token << "' at line " << m_token.uLine;
-                throw CVar::SyntaxErrorException(ss.str());
+                throw cvar::SyntaxErrorException(ss.str());
             }
 
             if (std::get<TokenIndex_String>(m_token.token) != "off" && std::stoi(std::get<TokenIndex_String>(m_token.token).CString()) > 0)
@@ -217,13 +217,13 @@ namespace das2 {
             if (!(m_bTokenRead = _NextToken())) {
                 std::stringstream ss;
                 ss << "Wavefront obj: Unexpected end of file at line " << uPrevLine;
-                throw CVar::UnexpectedEOFException(ss.str());
+                throw cvar::UnexpectedEOFException(ss.str());
             }
 
             if (m_token.token.index() != TokenIndex_String) {
                 std::stringstream ss;
                 ss << "Wavefront obj: Unexpected token '" << m_token.token << "' at line " << m_token.uLine;
-                throw CVar::UnexpectedEOFException(ss.str());
+                throw cvar::UnexpectedEOFException(ss.str());
             }
 
             m_root.groups.back().szMaterialName = std::get<TokenIndex_String>(m_token.token);
@@ -251,7 +251,7 @@ namespace das2 {
                 if (m_token.token.index() != TokenIndex_Keyword) {
                     std::stringstream ss;
                     ss << "Wavefront obj: Unexpected token '" << m_token.token << "' at line " << m_token.uLine;
-                    throw CVar::SyntaxErrorException(ss.str());
+                    throw cvar::SyntaxErrorException(ss.str());
                 }
 
                 KeywordToken kwToken = std::get<KeywordToken>(m_token.token);

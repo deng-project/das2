@@ -9,10 +9,10 @@ namespace das2 {
 
     std::ostream& operator<<(std::ostream& _stream, const BinString& _szData) {
         const uint16_t uLength = _szData.Length();
-        const CVar::hash_t hshString = _szData.Hash();
+        const cvar::hash_t hshString = _szData.Hash();
 
         _stream.write(reinterpret_cast<const char*>(&uLength), sizeof(uint16_t));
-        _stream.write(reinterpret_cast<const char*>(&hshString), sizeof(CVar::hash_t));
+        _stream.write(reinterpret_cast<const char*>(&hshString), sizeof(cvar::hash_t));
         _stream.write(_szData.CString(), uLength + 1);
         return _stream;
     }
