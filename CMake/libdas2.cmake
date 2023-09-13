@@ -12,12 +12,14 @@ set(DAS2_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/Sources/DasStructures.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Sources/Serializer.cpp)
 
-# Converter support
+# Third-party format converter support
 if (DAS2_WAVEFRONT_OBJ)
     list(APPEND DAS2_HEADERS 
+        ${CMAKE_CURRENT_SOURCE_DIR}/Include/das2/converters/obj/DasConverter.h
         ${CMAKE_CURRENT_SOURCE_DIR}/Include/das2/converters/obj/Data.h
         ${CMAKE_CURRENT_SOURCE_DIR}/Include/das2/converters/obj/Unserializer.h)
     list(APPEND DAS2_SOURCES
+        ${CMAKE_CURRENT_SOURCE_DIR}/Sources/converters/obj/DasConverter.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/Sources/converters/obj/Unserializer.cpp)
 endif()
 
