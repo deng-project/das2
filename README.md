@@ -6,7 +6,7 @@ Supported formats for das2 conversion are glTF 2.0, Wavefront OBJ, STL, 3DS, Col
 
 ## Improvements over the previous format (das 1.0)
 
-* zlib compression support
+* zstd compression support
 * PBR material as well as Phong material support
 * Embedded multiple LODs  
 * stream-based API
