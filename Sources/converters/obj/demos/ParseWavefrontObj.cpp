@@ -5,7 +5,7 @@
 
 #include <fstream>
 #include <iostream>
-#include <das2/converters/obj/ParseWavefrontObj.h>
+#include <das2/converters/obj/demos/ParseWavefrontObj.h>
 
 namespace das2 {
     namespace demo {

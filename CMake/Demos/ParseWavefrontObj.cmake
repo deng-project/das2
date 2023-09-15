@@ -5,9 +5,9 @@
 
 set(PARSE_WAVEFRONT_OBJ_TARGET ParseWavefrontObj)
 set(PARSE_WAVEFRONT_OBJ_HEADERS 
-    ${CMAKE_CURRENT_SOURCE_DIR}/Include/das2/converters/obj/ParseWavefrontObj.h)
+    ${CMAKE_CURRENT_SOURCE_DIR}/Include/das2/converters/obj/demos/ParseWavefrontObj.h)
 set(PARSE_WAVEFRONT_OBJ_SOURCES
-    ${CMAKE_CURRENT_SOURCE_DIR}/Sources/converters/obj/ParseWavefrontObj.cpp)
+    ${CMAKE_CURRENT_SOURCE_DIR}/Sources/converters/obj/demos/ParseWavefrontObj.cpp)
 
 add_executable(${PARSE_WAVEFRONT_OBJ_TARGET} 
     ${PARSE_WAVEFRONT_OBJ_HEADERS}

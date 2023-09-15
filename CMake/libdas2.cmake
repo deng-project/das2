@@ -16,6 +16,7 @@ set(DAS2_SOURCES
 if (DAS2_WAVEFRONT_OBJ)
     list(APPEND DAS2_HEADERS 
         ${CMAKE_CURRENT_SOURCE_DIR}/Include/das2/converters/obj/DasConverter.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/Include/das2/Exceptions.h
         ${CMAKE_CURRENT_SOURCE_DIR}/Include/das2/converters/obj/Data.h
         ${CMAKE_CURRENT_SOURCE_DIR}/Include/das2/converters/obj/Unserializer.h)
     list(APPEND DAS2_SOURCES
@@ -34,10 +35,15 @@ else()
 endif()
 
 add_dependencies(${DAS2_TARGET} cvar)
-find_package(ZLIB REQUIRED)
-target_link_libraries(${DAS2_TARGET} 
+
+find_package(Boost REQUIRED COMPONENTS iostreams)
+find_package(zstd CONFIG REQUIRED)
+message(STATUS "")
+target_link_libraries(${DAS2_TARGET}
     PUBLIC cvar
-    PRIVATE ZLIB::ZLIB)
+    PRIVATE Boost::boost 
+    PRIVATE Boost::iostreams
+    PRIVATE $<IF:$<TARGET_EXISTS:zstd::libzstd_shared>,zstd::libzstd_shared,zstd::libzstd_static>)
 
 target_include_directories(${DAS2_TARGET}
     PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Include

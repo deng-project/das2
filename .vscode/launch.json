@@ -13,7 +13,15 @@
             "cwd": "${workspaceFolder}",
             "valuesFormatting": "parseText"
         },
-
+        {
+            "type": "gdb",
+            "request": "launch",
+            "name": "ConvertWavefrontObj",
+            "target": "${workspaceFolder}/Build/ConvertWavefrontObj",
+            "arguments": "cube.obj cube_uncompressed.das2",
+            "cwd": "${workspaceFolder}/Build",
+            "valuesFormatting": "parseText"
+        },
         {
             "type": "lldb",
             "request": "launch",

@@ -7,10 +7,14 @@
 #include <sstream>
 #include <iostream>
 
+#include <boost/iostreams/filtering_streambuf.hpp>
+#include <boost/iostreams/copy.hpp>
+#include <boost/iostreams/filter/zstd.hpp>
+
 namespace das2 {
 
     void Serializer::_StreamUncompressed(std::ostream& _stream) {
-        _StreamUncompressedArray(m_model.buffers, _stream);
+        _stream << m_model.buffer;
         _StreamUncompressedArray(m_model.meshes, _stream);
         _StreamUncompressedArray(m_model.meshGroups, _stream);
         _StreamUncompressedArray(m_model.nodes, _stream);
@@ -25,9 +29,23 @@ namespace das2 {
 
 
     void Serializer::_StreamCompressed() {
-        std::stringstream sstream;
-        _StreamUncompressed(sstream);
-        std::cout << "string stream size: " << sstream.str().size() << '\n';
+        namespace bio = boost::iostreams;
+
+        std::stringstream origin;
+
+        _StreamUncompressed(origin);
+
+        bio::filtering_streambuf<bio::input> out;
+
+        if (m_model.header.bZlibLevel == 9)
+            out.push(bio::zstd_compressor(bio::zstd_params(bio::zstd::best_compression)));
+        else if (m_model.header.bZlibLevel == 1)
+            out.push(bio::zstd_compressor(bio::zstd_params(bio::zstd::best_speed)));
+        else if (m_model.header.bZlibLevel == 255)
+            out.push(bio::zstd_compressor(bio::zstd_params(bio::zstd::default_compression)));
+
+        out.push(origin);
+        bio::copy(out, m_stream);
     }
 
 

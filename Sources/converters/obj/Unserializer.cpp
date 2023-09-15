@@ -161,18 +161,18 @@ namespace das2 {
                 
                 // extract indices
                 if (delims[0] != std::string::npos) {
-                    face.x = std::stoi(stdStrFace.substr(0, delims[0]));
+                    face.x = std::stoi(stdStrFace.substr(0, delims[0]))-1;
                     if (delims[1] != std::string::npos) {
                         if (delims[1] - delims[0] > 1)
-                            face.y = std::stoi(stdStrFace.substr(delims[0]+1, delims[1] - delims[0] - 1));
+                            face.y = std::stoi(stdStrFace.substr(delims[0]+1, delims[1] - delims[0] - 1))-1;
                         if (stdStrFace.size() - delims[1] > 1)
-                            face.z = std::stoi(stdStrFace.substr(delims[1]+1));
+                            face.z = std::stoi(stdStrFace.substr(delims[1]+1))-1;
                     }
                     else if (stdStrFace.size() - delims[0] > 1) {
-                        face.y = std::stoi(stdStrFace.substr(delims[0]+1));
+                        face.y = std::stoi(stdStrFace.substr(delims[0]+1))-1;
                     }
                 } else {
-                    face.x = std::stoi(stdStrFace);
+                    face.x = std::stoi(stdStrFace)-1;
                 }
 
                 i++;

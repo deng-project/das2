@@ -14,7 +14,10 @@ elif sys.platform.startswith("win32"):
 elif sys.platform.startswith("darwin"):
     PLATFORM = "osx"
 
-VCPKG_PACKAGES = [ f"zlib:x64-{PLATFORM}" ]
+VCPKG_PACKAGES = [ 
+    f"zstd:x64-{PLATFORM}",
+    f"boost-iostreams:x64-{PLATFORM}" 
+]
 
 def check_and_install_vcpkg():
     vcpkg_exec = VCPKG_PATH + "/vcpkg"

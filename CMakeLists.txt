@@ -24,6 +24,8 @@ option(DAS2_STANFORD_X3D "Build conversion support from and to X3D format" ON)
 option(DAS2_FILMBOX_PROPRIETARY "Build conversion support from and to fbx (built on top of proprietary SDK)" ON)
 option(DAS2_FILMBOX_RSE "Build conversion support from and to fbx (reverse engineered implementation)" ON)
 
+include(${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/vcpkg/scripts/buildsystems/vcpkg.cmake)
+
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/cvar)
@@ -35,5 +37,8 @@ endif()
 
 if (DAS2_BUILD_DEMOS)
     message(STATUS "Adding demo build configurations")
-    include(${CMAKE_CURRENT_SOURCE_DIR}/CMake/Demos/ParseWavefrontObj.cmake)
+    if (DAS2_WAVEFRONT_OBJ)
+        include(${CMAKE_CURRENT_SOURCE_DIR}/CMake/Demos/ParseWavefrontObj.cmake)
+        include(${CMAKE_CURRENT_SOURCE_DIR}/CMake/Demos/ConvertWavefrontObj.cmake)
+    endif()
 endif()

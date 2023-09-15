@@ -36,25 +36,31 @@ namespace das2 {
             }
 
             BinString(const char* _szData) {
-                m_uLength = static_cast<uint16_t>(std::strlen(_szData));
-                m_pData = new char[m_uLength+1]{};
-                std::memcpy(m_pData, _szData, m_uLength);
-                m_hshString = RUNTIME_CRC(m_pData);
+                if (_szData != nullptr) {
+                    m_uLength = static_cast<uint16_t>(std::strlen(_szData));
+                    m_pData = new char[m_uLength+1]{};
+                    std::memcpy(m_pData, _szData, m_uLength);
+                    m_hshString = RUNTIME_CRC(m_pData);
+                }
             }
 
             BinString(const std::string& _str) {
-                m_uLength = static_cast<uint16_t>(_str.size());
-                m_pData = new char[m_uLength+1]{};
-                std::memcpy(m_pData, _str.data(), _str.size());
-                m_hshString = RUNTIME_CRC(m_pData);
+                if (_str.size()) {
+                    m_uLength = static_cast<uint16_t>(_str.size());
+                    m_pData = new char[m_uLength+1]{};
+                    std::memcpy(m_pData, _str.data(), _str.size());
+                    m_hshString = RUNTIME_CRC(m_pData);
+                }
             }
 
             BinString(const BinString& _str) :
                 m_uLength(_str.m_uLength),
                 m_hshString(_str.m_hshString)
             {
-                m_pData = new char[m_uLength+1]{};
-                std::memcpy(m_pData, _str.m_pData, m_uLength);
+                if (m_uLength) {
+                    m_pData = new char[m_uLength+1]{};
+                    std::memcpy(m_pData, _str.m_pData, m_uLength);
+                }
             }
 
             BinString(BinString&& _str) noexcept :
@@ -70,8 +76,11 @@ namespace das2 {
             BinString& operator=(const BinString& _other) {
                 m_uLength = _other.m_uLength;
                 m_hshString = _other.m_hshString;
-                m_pData = new char[m_uLength+1]{};
-                std::memcpy(m_pData, _other.m_pData, m_uLength);
+                
+                if (m_uLength) {
+                    m_pData = new char[m_uLength+1]{};
+                    std::memcpy(m_pData, _other.m_pData, m_uLength);
+                }
                 return *this;
             }
 
@@ -306,7 +315,7 @@ namespace das2 {
 
     struct Model {
         Header header;
-        std::vector<Buffer> buffers;
+        Buffer buffer;
         std::vector<Mesh> meshes;
         std::vector<MeshGroup> meshGroups;
         std::vector<Node> nodes;
