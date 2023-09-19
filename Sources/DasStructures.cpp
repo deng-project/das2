@@ -7,7 +7,7 @@
 
 namespace das2 {
 
-    std::ostream& operator<<(std::ostream& _stream, const BinString& _szData) {
+    std::ostream& operator<<(std::ostream& _stream, BinString& _szData) {
         const uint16_t uLength = _szData.Length();
         const cvar::hash_t hshString = _szData.Hash();
 
@@ -19,7 +19,7 @@ namespace das2 {
     
 
     std::ostream& operator<<(std::ostream& _stream, const Header& _header) {
-        _stream.write(reinterpret_cast<const char*>(&_header.uMagic), sizeof(uint64_t));
+        _stream.write(reinterpret_cast<const char*>(&_header.m_uMagic), sizeof(uint64_t));
         _stream << _header.szAuthorName;
         _stream << _header.szComment;
         _stream.write(reinterpret_cast<const char*>(&_header.uVerticesCount), sizeof(uint32_t));
@@ -33,9 +33,9 @@ namespace das2 {
 
 
     std::ostream& operator<<(std::ostream& _stream, const Buffer& _buffer) {
-        _stream.write(reinterpret_cast<const char*>(&_buffer.bStructure), sizeof(StructureIdentifier));
-        _stream.write(reinterpret_cast<const char*>(&_buffer.uLength), sizeof(uint32_t));
-        _stream.write(_buffer.pData, _buffer.uLength);
+        _stream.write(reinterpret_cast<const char*>(&_buffer.m_bStructure), sizeof(StructureIdentifier));
+        _stream.write(reinterpret_cast<const char*>(&_buffer.m_uLength), sizeof(uint32_t));
+        _stream.write(_buffer.m_pData, _buffer.m_uLength);
         return _stream;
     }
 
