@@ -13,6 +13,7 @@
 #include <vector>
 #include <ostream>
 #include <variant>
+#include <utility>
 
 #include <das2/Api.h>
 #include <cvar/SID.h>
@@ -181,7 +182,8 @@ namespace das2 {
             inline void Initialize() {
                 m_uMagic = DAS2_MAGIC;
             }
-            std::ostream& operator<<(std::ostream& _stream);
+
+            friend std::ostream& operator<<(std::ostream& _stream, const Header& _header);
     };
 
 
@@ -249,8 +251,8 @@ namespace das2 {
             inline uint32_t Size() const {
                 return m_uLength;
             }
-            
-            std::ostream& operator<<(std::ostream& _stream);
+
+            friend std::ostream& operator<<(std::ostream& _stream, const Buffer& _buffer);
     };
 
 
@@ -278,7 +280,7 @@ namespace das2 {
                 m_bStructure = StructureIdentifier_MorphTarget;
             }
 
-            std::ostream& operator<<(std::ostream& _stream);
+            friend std::ostream& operator<<(std::ostream& _stream, const MorphTarget& _morphTarget);
     };
 
 
@@ -317,7 +319,7 @@ namespace das2 {
                 m_bStructure = StructureIdentifier_Mesh;
             }
 
-            std::ostream& operator<<(std::ostream& _stream);
+            friend std::ostream& operator<<(std::ostream& _stream, const Mesh& _mesh);
     };
 
 
@@ -338,7 +340,7 @@ namespace das2 {
                 m_bStructure = StructureIdentifier_MeshGroup;
             }
 
-            std::ostream& operator<<(std::ostream& _stream);
+            friend std::ostream& operator<<(std::ostream& _stream, const MeshGroup& _meshGroup);
     };
 
 
@@ -348,8 +350,7 @@ namespace das2 {
 
         public:
             BinString szName = nullptr;
-            uint32_t uChildrenCount = 0;
-            uint32_t* pChildren = nullptr;
+            std::vector<uint32_t> children;
             uint32_t uMeshGroupId = static_cast<uint32_t>(-1);
             uint32_t uSkeletonId = static_cast<uint32_t>(-1);
             TRS::Matrix4<float> mCustomTransform;
@@ -366,7 +367,7 @@ namespace das2 {
                 m_bStructure = StructureIdentifier_Node;
             }
 
-            std::ostream& operator<<(std::ostream& _stream);
+            friend std::ostream& operator<<(std::ostream& _stream, const Node& _node);
     };
 
 
@@ -387,7 +388,7 @@ namespace das2 {
                 m_bStructure = StructureIdentifier_Scene;
             }
 
-            std::ostream& operator<<(std::ostream& _stream);
+            friend std::ostream& operator<<(std::ostream& _stream, const Scene& _scene);
     };
 
 
@@ -412,7 +413,7 @@ namespace das2 {
                 m_bStructure = StructureIdentifier_SkeletonJoint;
             }
 
-            std::ostream& operator<<(std::ostream& _stream);
+            friend std::ostream& operator<<(std::ostream& _stream, const SkeletonJoint& _skeletonJoint);
     };
 
 
@@ -434,7 +435,7 @@ namespace das2 {
                 m_bStructure = StructureIdentifier_Skeleton;
             }
 
-            std::ostream& operator<<(std::ostream& _stream);
+            friend std::ostream& operator<<(std::ostream& _stream, const Skeleton& _skeleton);
     };
 
 
@@ -455,7 +456,7 @@ namespace das2 {
                 m_bStructure = StructureIdentifier_Animation;
             }
 
-            std::ostream& operator<<(std::ostream& _stream);
+            friend std::ostream& operator<<(std::ostream& _stream, const Animation& _animation);
     };
 
 
@@ -469,10 +470,9 @@ namespace das2 {
             uint32_t uJointPropertyId = static_cast<uint32_t>(-1);
             AnimationTarget bAnimationTarget = AnimationTarget_Unknown;
             InterpolationType bInterpolationType = InterpolationType_Unknown;
-            uint32_t uKeyframeCount = 0;
             uint32_t uWeightCount = 0;
             std::vector<float> keyframes;
-            std::vector<std::array<_Variant, 3>> tangents;
+            std::vector<std::array<_Variant, 2>> tangents;
             std::vector<_Variant> targetValues;
 
         public:
@@ -484,7 +484,7 @@ namespace das2 {
                 m_bStructure = StructureIdentifier_AnimationChannel;
             }
 
-            std::ostream& operator<<(std::ostream& _stream);
+            friend std::ostream& operator<<(std::ostream& _stream, const AnimationChannel& _animationChannel);
     };
 
 
@@ -510,7 +510,7 @@ namespace das2 {
                 m_bStructure = StructureIdentifier_MaterialPhong;
             }
 
-            std::ostream& operator<<(std::ostream& _stream);
+            friend std::ostream& operator<<(std::ostream& _stream, const MaterialPhong& _materialPbr);
     };
 
 
@@ -540,7 +540,7 @@ namespace das2 {
                 m_bStructure = StructureIdentifier_MaterialPbr;
             }
 
-            std::ostream& operator<<(std::ostream& _stream);
+            friend std::ostream& operator<<(std::ostream& _stream, const MaterialPbr& _materialPbr);
     };
 
     struct Model {
@@ -562,4 +562,17 @@ namespace das2 {
         std::vector<MaterialPbr> pbrMaterials;
     };
 
+    DAS2_API std::ostream& operator<<(std::ostream& _stream, const Header& _header);
+    DAS2_API std::ostream& operator<<(std::ostream& _stream, const Buffer& _buffer);
+    DAS2_API std::ostream& operator<<(std::ostream& _stream, const MorphTarget& _morphTarget);
+    DAS2_API std::ostream& operator<<(std::ostream& _stream, const Mesh& _meshes);
+    DAS2_API std::ostream& operator<<(std::ostream& _stream, const MeshGroup& _meshGroup);
+    DAS2_API std::ostream& operator<<(std::ostream& _stream, const Node& _node);
+    DAS2_API std::ostream& operator<<(std::ostream& _stream, const Scene& _scene);
+    DAS2_API std::ostream& operator<<(std::ostream& _stream, const SkeletonJoint& _skeletonJoint);
+    DAS2_API std::ostream& operator<<(std::ostream& _stream, const Skeleton& _skeleton);
+    DAS2_API std::ostream& operator<<(std::ostream& _stream, const Animation& _animation);
+    DAS2_API std::ostream& operator<<(std::ostream& _stream, const AnimationChannel& _animationChannel);
+    DAS2_API std::ostream& operator<<(std::ostream& _stream, const MaterialPhong& _phongMaterial);
+    DAS2_API std::ostream& operator<<(std::ostream& _stream, const MaterialPbr& _pbrMaterial);
 }

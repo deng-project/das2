@@ -7,7 +7,7 @@
 
 namespace das2 {
 
-    std::ostream& operator<<(std::ostream& _stream, BinString& _szData) {
+    std::ostream& operator<<(std::ostream& _stream, const BinString& _szData) {
         const uint16_t uLength = _szData.Length();
         const cvar::hash_t hshString = _szData.Hash();
 
@@ -46,7 +46,7 @@ namespace das2 {
 
 
     std::ostream& operator<<(std::ostream& _stream, const Mesh& _mesh) {
-        _stream.write(reinterpret_cast<const char*>(&_mesh.bStructure), sizeof(StructureIdentifier));
+        _stream.write(reinterpret_cast<const char*>(&_mesh.m_bStructure), sizeof(StructureIdentifier));
         _stream.write(reinterpret_cast<const char*>(&_mesh.uIndexBufferId), sizeof(uint32_t));
         _stream.write(reinterpret_cast<const char*>(&_mesh.uIndexBufferOffset), sizeof(uint32_t));
         _stream.write(reinterpret_cast<const char*>(&_mesh.uDrawCount), sizeof(uint32_t));
@@ -64,50 +64,73 @@ namespace das2 {
         _stream.write(reinterpret_cast<const char*>(&_mesh.arrSkeletalJointWeightBufferOffsets), sizeof(std::array<uint32_t, 8>));
         _stream.write(reinterpret_cast<const char*>(&_mesh.bMaterialType), sizeof(MaterialType));
         _stream.write(reinterpret_cast<const char*>(&_mesh.uMaterialId), sizeof(uint32_t));
-        _stream.write(reinterpret_cast<const char*>(&_mesh.uMorphTargetCount), sizeof(uint32_t));
-
-        for (uint32_t i = 0; i < _mesh.uMorphTargetCount; i++) {
-            _stream << _mesh.pMorphTargets[i];
-        }
-
-        _stream.write(reinterpret_cast<const char*>(&_mesh.uMultipleLodCount), sizeof(uint32_t));
         
-        for (uint32_t i = 0; i < _mesh.uMultipleLodCount; i++) {
-            _stream << _mesh.pMultipleLods[i];
+        // output morph targets
+        uint32_t uMorphTargetCount = static_cast<uint32_t>(_mesh.morphTargets.size());
+        _stream.write(reinterpret_cast<const char*>(&uMorphTargetCount), sizeof(uint32_t));
+        if (_mesh.morphTargets.size())
+            _stream.write(reinterpret_cast<const char*>(_mesh.morphTargets.data()), sizeof(MorphTarget) * _mesh.morphTargets.size());
+
+        // output multiple LODs (recursive)
+        uint32_t uMultipleLodCount = static_cast<uint32_t>(_mesh.multipleLods.size());
+        _stream.write(reinterpret_cast<const char*>(&uMultipleLodCount), sizeof(uint32_t));
+        for (size_t i = 0; i < _mesh.multipleLods.size(); i++) {
+            _stream << _mesh.multipleLods[i];
         }
+
         return _stream;
     }
 
 
     std::ostream& operator<<(std::ostream& _stream, const MeshGroup& _meshGroup) {
-        _stream.write(reinterpret_cast<const char*>(&_meshGroup.bStructure), sizeof(StructureIdentifier));
+        _stream.write(reinterpret_cast<const char*>(&_meshGroup.m_bStructure), sizeof(StructureIdentifier));
         _stream << _meshGroup.szName;
-        _stream.write(reinterpret_cast<const char*>(&_meshGroup.uMeshCount), sizeof(uint32_t));
-        _stream.write(reinterpret_cast<const char*>(&_meshGroup.pMeshes), sizeof(uint32_t) * static_cast<size_t>(_meshGroup.uMeshCount));
+
+        uint32_t uMeshCount = static_cast<uint32_t>(_meshGroup.meshes.size());
+        _stream.write(reinterpret_cast<const char*>(&uMeshCount), sizeof(uint32_t));
+        _stream.write(reinterpret_cast<const char*>(_meshGroup.meshes.data()), sizeof(uint32_t) * _meshGroup.meshes.size());
         return _stream;
     }
 
 
     std::ostream& operator<<(std::ostream& _stream, const Node& _node) {
-        _stream.write(reinterpret_cast<const char*>(&_node), sizeof(Node));
+        _stream.write(reinterpret_cast<const char*>(&_node.m_bStructure), sizeof(StructureIdentifier));
+        _stream << _node.szName;
+        
+        uint32_t uChildrenCount = static_cast<uint32_t>(_node.children.size());
+        _stream.write(reinterpret_cast<const char*>(&uChildrenCount), sizeof(uint32_t));
+        _stream.write(reinterpret_cast<const char*>(_node.children.data()), sizeof(uint32_t) * _node.children.size());
+
+        _stream.write(reinterpret_cast<const char*>(&_node.uMeshGroupId), sizeof(uint32_t));
+        _stream.write(reinterpret_cast<const char*>(&_node.uSkeletonId), sizeof(uint32_t));
+        _stream.write(reinterpret_cast<const char*>(&_node.mCustomTransform), sizeof(TRS::Matrix4<float>));
+        _stream.write(reinterpret_cast<const char*>(&_node.qRotation), sizeof(TRS::Quaternion));
+        _stream.write(reinterpret_cast<const char*>(&_node.vTranslation), sizeof(TRS::Vector3<float>));
+        _stream.write(reinterpret_cast<const char*>(&_node.fScale), sizeof(float));
+
         return _stream;
     }
 
 
     std::ostream& operator<<(std::ostream& _stream, const Scene& _scene) {
-        _stream.write(reinterpret_cast<const char*>(&_scene.bStructure), sizeof(StructureIdentifier));
+        _stream.write(reinterpret_cast<const char*>(&_scene.m_bStructure), sizeof(StructureIdentifier));
         _stream << _scene.szName;
-        _stream.write(reinterpret_cast<const char*>(_scene.uRootNodeCount), sizeof(uint32_t));
-        _stream.write(reinterpret_cast<const char*>(_scene.pRootNodes), sizeof(uint32_t) * static_cast<size_t>(_scene.uRootNodeCount));
+
+        uint32_t uRootNodeCount = static_cast<uint32_t>(_scene.rootNodes.size());
+        _stream.write(reinterpret_cast<const char*>(&uRootNodeCount), sizeof(uint32_t));
+        _stream.write(reinterpret_cast<const char*>(_scene.rootNodes.data()), sizeof(uint32_t) * _scene.rootNodes.size());
         return _stream;
     }
 
 
     std::ostream& operator<<(std::ostream& _stream, const SkeletonJoint& _skeletonJoint) {
-        _stream.write(reinterpret_cast<const char*>(&_skeletonJoint.bStructure), sizeof(StructureIdentifier));
+        _stream.write(reinterpret_cast<const char*>(&_skeletonJoint.m_bStructure), sizeof(StructureIdentifier));
         _stream << _skeletonJoint.szName;
-        _stream.write(reinterpret_cast<const char*>(&_skeletonJoint.uChildrenCount), sizeof(uint32_t));
-        _stream.write(reinterpret_cast<const char*>(&_skeletonJoint.pChildren), sizeof(uint32_t) * static_cast<size_t>(_skeletonJoint.uChildrenCount));
+
+        uint32_t uChildrenCount = static_cast<uint32_t>(_skeletonJoint.children.size());
+        _stream.write(reinterpret_cast<const char*>(&uChildrenCount), sizeof(uint32_t));
+        _stream.write(reinterpret_cast<const char*>(_skeletonJoint.children.data()), sizeof(uint32_t) * _skeletonJoint.children.size());
+        
         _stream.write(reinterpret_cast<const char*>(&_skeletonJoint.mInverseBindPos), sizeof(TRS::Matrix4<float>));
         _stream.write(reinterpret_cast<const char*>(&_skeletonJoint.qRotation), sizeof(TRS::Quaternion));
         _stream.write(reinterpret_cast<const char*>(&_skeletonJoint.vTranslation), sizeof(TRS::Vector3<float>));
@@ -117,48 +140,92 @@ namespace das2 {
 
 
     std::ostream& operator<<(std::ostream& _stream, const Skeleton& _skeleton) {
-        _stream.write(reinterpret_cast<const char*>(&_skeleton.bStructure), sizeof(StructureIdentifier));
+        _stream.write(reinterpret_cast<const char*>(&_skeleton.m_bStructure), sizeof(StructureIdentifier));
         _stream << _skeleton.szName;
         _stream.write(reinterpret_cast<const char*>(&_skeleton.uParent), sizeof(uint32_t));
-        _stream.write(reinterpret_cast<const char*>(&_skeleton.uJointCount), sizeof(uint32_t));
-        _stream.write(reinterpret_cast<const char*>(&_skeleton.pJoints), sizeof(uint32_t) * static_cast<size_t>(_skeleton.uJointCount));
+        
+        uint32_t uJointCount = static_cast<uint32_t>(_skeleton.joints.size());
+        _stream.write(reinterpret_cast<const char*>(&uJointCount), sizeof(uint32_t));
+        _stream.write(reinterpret_cast<const char*>(_skeleton.joints.data()), sizeof(uint32_t) * _skeleton.joints.size());
         return _stream;
     }
 
     std::ostream& operator<<(std::ostream& _stream, const Animation& _animation) {
-        _stream.write(reinterpret_cast<const char*>(&_animation.bStructure), sizeof(StructureIdentifier));
+        _stream.write(reinterpret_cast<const char*>(&_animation.m_bStructure), sizeof(StructureIdentifier));
         _stream << _animation.szName;
-        _stream.write(reinterpret_cast<const char*>(&_animation.uAnimationChannelCount), sizeof(uint32_t));
-        _stream.write(reinterpret_cast<const char*>(&_animation.pAnimationChannels), sizeof(uint32_t) * static_cast<size_t>(_animation.uAnimationChannelCount));
+
+        uint32_t uAnimationChannelCount = static_cast<uint32_t>(_animation.animationChannels.size());
+        _stream.write(reinterpret_cast<const char*>(&uAnimationChannelCount), sizeof(uint32_t));
+        _stream.write(reinterpret_cast<const char*>(_animation.animationChannels.data()), sizeof(uint32_t) * _animation.animationChannels.size());
         return _stream;
     }
 
     std::ostream& operator<<(std::ostream& _stream, const AnimationChannel& _animationChannel) {
-        _stream.write(reinterpret_cast<const char*>(&_animationChannel.bStructure), sizeof(StructureIdentifier));
+        _stream.write(reinterpret_cast<const char*>(&_animationChannel.m_bStructure), sizeof(StructureIdentifier));
         _stream.write(reinterpret_cast<const char*>(&_animationChannel.uNodePropertyId), sizeof(uint32_t));
         _stream.write(reinterpret_cast<const char*>(&_animationChannel.uJointPropertyId), sizeof(uint32_t));
         _stream.write(reinterpret_cast<const char*>(&_animationChannel.bAnimationTarget), sizeof(AnimationTarget));
         _stream.write(reinterpret_cast<const char*>(&_animationChannel.bInterpolationType), sizeof(InterpolationType));
-        _stream.write(reinterpret_cast<const char*>(&_animationChannel.uKeyframeCount), sizeof(uint32_t));
         _stream.write(reinterpret_cast<const char*>(&_animationChannel.uWeightCount), sizeof(uint32_t));
-        _stream.write(reinterpret_cast<const char*>(&_animationChannel.pKeyframes), sizeof(float) * static_cast<size_t>(_animationChannel.uKeyframeCount));
 
+        uint32_t uKeyframeCount = static_cast<uint32_t>(_animationChannel.keyframes.size());
+        _stream.write(reinterpret_cast<const char*>(&uKeyframeCount), sizeof(uint32_t));
+        _stream.write(reinterpret_cast<const char*>(_animationChannel.keyframes.data()), sizeof(float) * _animationChannel.keyframes.size());
+
+        // write tangents
         if (_animationChannel.bInterpolationType == InterpolationType_CubicSpline) {
+            for (auto it = _animationChannel.tangents.begin(); it != _animationChannel.tangents.end(); it++) {
+                switch (_animationChannel.bAnimationTarget) {
+                    case AnimationTarget_Rotation:
+                        _stream.write(reinterpret_cast<const char*>(&std::get<TRS::Quaternion>((*it)[0])), sizeof(TRS::Quaternion));
+                        _stream.write(reinterpret_cast<const char*>(&std::get<TRS::Quaternion>((*it)[1])), sizeof(TRS::Quaternion));
+                        break;
+
+                    case AnimationTarget_Translation:
+                        _stream.write(reinterpret_cast<const char*>(&std::get<TRS::Vector3<float>>((*it)[0])), sizeof(TRS::Vector3<float>));
+                        _stream.write(reinterpret_cast<const char*>(&std::get<TRS::Vector3<float>>((*it)[1])), sizeof(TRS::Vector3<float>));
+                        break;
+
+                    case AnimationTarget_Scale:
+                        _stream.write(reinterpret_cast<const char*>(&std::get<float>((*it)[0])), sizeof(float));
+                        _stream.write(reinterpret_cast<const char*>(&std::get<float>((*it)[1])), sizeof(float));
+                        break;
+
+                    case AnimationTarget_Weights:
+                        {
+                            auto& a1 = std::get<std::vector<float>>((*it)[0]);
+                            auto& a2 = std::get<std::vector<float>>((*it)[1]);
+                            _stream.write(reinterpret_cast<const char*>(a1.data()), a1.size() * sizeof(float));
+                            _stream.write(reinterpret_cast<const char*>(a2.data()), a2.size() * sizeof(float));
+                        }
+                        break;
+
+                    default:
+                        break;
+                }
+            }
+        }
+
+        // write target values
+        for (auto it = _animationChannel.targetValues.begin(); it != _animationChannel.targetValues.end(); it++) {
             switch (_animationChannel.bAnimationTarget) {
-                case AnimationTarget_Weights:
-                    _stream.write(_animationChannel.pTangents, 2 * sizeof(float) * static_cast<size_t>(_animationChannel.uWeightCount * _animationChannel.uKeyframeCount));
+                case AnimationTarget_Rotation:
+                    _stream.write(reinterpret_cast<const char*>(&std::get<TRS::Quaternion>(*it)), sizeof(TRS::Quaternion));
                     break;
 
                 case AnimationTarget_Translation:
-                    _stream.write(_animationChannel.pTangents, 2 * sizeof(TRS::Vector3<float>) * static_cast<size_t>(_animationChannel.uKeyframeCount));
-                    break;
-
-                case AnimationTarget_Rotation:
-                    _stream.write(_animationChannel.pTangents, 2 * sizeof(TRS::Quaternion) * static_cast<size_t>(_animationChannel.uKeyframeCount));
+                    _stream.write(reinterpret_cast<const char*>(&std::get<TRS::Vector3<float>>(*it)), sizeof(TRS::Vector3<float>));
                     break;
 
                 case AnimationTarget_Scale:
-                    _stream.write(_animationChannel.pTangents, 2 * sizeof(float) * static_cast<size_t>(_animationChannel.uKeyframeCount));
+                    _stream.write(reinterpret_cast<const char*>(&std::get<float>(*it)), sizeof(float));
+                    break;
+
+                case AnimationTarget_Weights:
+                    {
+                        auto& w = std::get<std::vector<float>>(*it);
+                        _stream.write(reinterpret_cast<const char*>(w.data()), sizeof(float) * w.size());
+                    }
                     break;
 
                 default:
@@ -166,34 +233,12 @@ namespace das2 {
             }
         }
 
-
-        switch (_animationChannel.bAnimationTarget) {
-            case AnimationTarget_Weights:
-                _stream.write(_animationChannel.pTargetValues, sizeof(float) * static_cast<size_t>(_animationChannel.uWeightCount * _animationChannel.uKeyframeCount));
-                break;
-
-            case AnimationTarget_Translation:
-                _stream.write(_animationChannel.pTargetValues, sizeof(TRS::Vector3<float>) * static_cast<size_t>(_animationChannel.uKeyframeCount));
-                break;
-
-            case AnimationTarget_Rotation:
-                _stream.write(_animationChannel.pTargetValues, sizeof(TRS::Quaternion) * static_cast<size_t>(_animationChannel.uKeyframeCount));
-                break;
-
-            case AnimationTarget_Scale:
-                _stream.write(_animationChannel.pTargetValues, sizeof(float) * static_cast<size_t>(_animationChannel.uKeyframeCount));
-                break;
-
-            default:
-                break;
-        }
-
         return _stream;
     }
 
 
     std::ostream& operator<<(std::ostream& _stream, const MaterialPhong& _phongMaterial) {
-        _stream.write(reinterpret_cast<const char*>(&_phongMaterial.bStructure), sizeof(StructureIdentifier));
+        _stream.write(reinterpret_cast<const char*>(&_phongMaterial.m_bStructure), sizeof(StructureIdentifier));
         _stream << _phongMaterial.szName;
         _stream.write(reinterpret_cast<const char*>(&_phongMaterial.vDiffuse), sizeof(TRS::Vector4<float>));
         _stream.write(reinterpret_cast<const char*>(&_phongMaterial.vSpecular), sizeof(TRS::Vector4<float>));
@@ -206,7 +251,7 @@ namespace das2 {
     }
 
     std::ostream& operator<<(std::ostream& _stream, const MaterialPbr& _pbrMaterial) {
-        _stream.write(reinterpret_cast<const char*>(_pbrMaterial.bStructure), sizeof(StructureIdentifier));
+        _stream.write(reinterpret_cast<const char*>(_pbrMaterial.m_bStructure), sizeof(StructureIdentifier));
         _stream << _pbrMaterial.szName;
         _stream.write(reinterpret_cast<const char*>(&_pbrMaterial.vAlbedoFactor), sizeof(TRS::Vector4<float>));
         _stream.write(reinterpret_cast<const char*>(&_pbrMaterial.vEmissiveFactor), sizeof(TRS::Vector4<float>));
