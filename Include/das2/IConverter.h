@@ -13,7 +13,7 @@ namespace das2 {
 
         public:
             IConverter(const BinString& _szAuthorName = "", const BinString& _szComment = "", uint8_t _bZlibLevel = 0) {
-                m_model.header.uMagic = DAS2_MAGIC;
+                m_model.header.Initialize();
                 m_model.header.szAuthorName = _szAuthorName;
                 m_model.header.szComment = _szComment;
                 m_model.header.bZlibLevel = _bZlibLevel;

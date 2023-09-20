@@ -148,8 +148,8 @@ namespace das2 {
                             std::stringstream ss;
                             ss << "Wavefront obj: Invalid token '" << m_token.token << "' at line " << m_token.uLine;
                             throw cvar::SyntaxErrorException(ss.str());
-                        } else if (i >= _uMin) {
-                            break;
+                        } else if (m_token.token.index() != TokenIndex_String && i >= _uMin) {
+                            return vec;
                         }
 
                         vec[i] = static_cast<decltype(vec.first)>(std::stof(std::get<TokenIndex_String>(m_token.token).CString()));

@@ -176,8 +176,8 @@ namespace das2 {
 
         public:
             Header() = default;
-            Header(const Header& _header);
-            Header(Header&& _header);
+            Header(const Header& _header) = default;
+            Header(Header&& _header) noexcept = default;
 
             inline void Initialize() {
                 m_uMagic = DAS2_MAGIC;
@@ -196,7 +196,7 @@ namespace das2 {
         public:
             Buffer() = default;
             Buffer(const Buffer& _buffer);
-            Buffer(Buffer&& _buffer);
+            Buffer(Buffer&& _buffer) noexcept;
             ~Buffer();
 
             inline void Initialize() {
@@ -230,7 +230,7 @@ namespace das2 {
 
                 size_t i = 0;
                 for (auto it = _first; it != _last; it++, i++) {
-                    static_cast<decltype(*it)*>(m_pData + uOffset)[i] = *it;
+                    reinterpret_cast<typename std::remove_reference<decltype(*it)>::type*>(m_pData + uOffset)[i] = *it;
                 }
 
                 return uOffset;
@@ -261,13 +261,9 @@ namespace das2 {
             StructureIdentifier m_bStructure = StructureIdentifier_Unknown;
             
         public:
-            uint32_t uIndexBufferId = static_cast<uint32_t>(-1);
             uint32_t uIndexBufferOffset = 0;
-            uint32_t uPositionVertexBufferId = static_cast<uint32_t>(-1);
             uint32_t uPositionVertexBufferOffset = 0;
-            uint32_t uSurfaceNormalBufferId = static_cast<uint32_t>(-1);
-            uint32_t uSurfaceNormalBufferOffset = 0;
-            std::array<uint32_t, 8> arrUVBufferIds;
+            uint32_t uVertexNormalBufferOffset = 0;
             std::array<uint32_t, 8> arrUVBufferOffsets;
             uint32_t uColorMultiplierId = static_cast<uint32_t>(-1);
             uint32_t uColorMultiplierOffset = 0;
@@ -289,20 +285,14 @@ namespace das2 {
             StructureIdentifier m_bStructure = StructureIdentifier_Unknown;
         
         public:
-            uint32_t uIndexBufferId = static_cast<uint32_t>(-1);
             uint32_t uIndexBufferOffset = 0;
             uint32_t uDrawCount = 0;
-            uint32_t uPositionVertexBufferId = static_cast<uint32_t>(-1);
             uint32_t uPositionVertexBufferOffset = 0;
-            uint32_t uSurfaceNormalBufferId = static_cast<uint32_t>(-1);
-            uint32_t uSurfaceNormalBufferOffset = 0;
-            std::array<uint32_t, 8> arrUVBufferIds;
+            uint32_t uVertexNormalBufferOffset = 0;
             std::array<uint32_t, 8> arrUVBufferOffsets;
             uint32_t uColorMultiplierId = static_cast<uint32_t>(-1);
             uint32_t uColorMultiplierOffset = 0;
-            std::array<uint32_t, 8> arrSkeletalJointIndexBufferIds;
             std::array<uint32_t, 8> arrSkeletalJointIndexBufferOffsets;
-            std::array<uint32_t, 8> arrSkeletalJointWeightBufferIds;
             std::array<uint32_t, 8> arrSkeletalJointWeightBufferOffsets;
             MaterialType bMaterialType = MaterialType_Unknown;
             uint32_t uMaterialId = static_cast<uint32_t>(-1);
@@ -312,8 +302,7 @@ namespace das2 {
         public:
             Mesh() = default;
             Mesh(const Mesh& _mesh) = default;
-            Mesh(Mesh&& _mesh) = default;
-            ~Mesh();
+            Mesh(Mesh&& _mesh) noexcept = default;
 
             inline void Initialize() {
                 m_bStructure = StructureIdentifier_Mesh;
@@ -334,7 +323,7 @@ namespace das2 {
         public:
             MeshGroup() = default;
             MeshGroup(const MeshGroup& _meshGroup) = default;
-            MeshGroup(MeshGroup&& _meshGroup) = default;
+            MeshGroup(MeshGroup&& _meshGroup) noexcept = default;
 
             inline void Initialize() {
                 m_bStructure = StructureIdentifier_MeshGroup;
@@ -361,7 +350,7 @@ namespace das2 {
         public:
             Node() = default;
             Node(const Node& _node) = default;
-            Node(Node&& _node) = default;
+            Node(Node&& _node) noexcept = default;
 
             inline void Initialize() {
                 m_bStructure = StructureIdentifier_Node;
@@ -381,8 +370,8 @@ namespace das2 {
 
         public:
             Scene() = default;
-            Scene(const Scene& _scene);
-            Scene(Scene&& _scene);
+            Scene(const Scene& _scene) = default;
+            Scene(Scene&& _scene) noexcept = default;
 
             inline void Initialize() {
                 m_bStructure = StructureIdentifier_Scene;
@@ -406,8 +395,8 @@ namespace das2 {
 
         public:
             SkeletonJoint() = default;
-            SkeletonJoint(const SkeletonJoint& _skeletonJoint);
-            SkeletonJoint(SkeletonJoint&& _skeletonJoint);
+            SkeletonJoint(const SkeletonJoint& _skeletonJoint) = default;
+            SkeletonJoint(SkeletonJoint&& _skeletonJoint) noexcept = default;
     
             inline void Initialize() {
                 m_bStructure = StructureIdentifier_SkeletonJoint;
@@ -429,7 +418,7 @@ namespace das2 {
         public:
             Skeleton() = default;
             Skeleton(const Skeleton& _skeleton) = default;
-            Skeleton(Skeleton&& _skeleton) = default;
+            Skeleton(Skeleton&& _skeleton) noexcept = default;
 
             inline void Initialize() {
                 m_bStructure = StructureIdentifier_Skeleton;
@@ -450,7 +439,7 @@ namespace das2 {
         public:
             Animation() = default;
             Animation(const Animation& _animation);
-            Animation(Animation&& _animation);
+            Animation(Animation&& _animation) noexcept = default;
 
             inline void Initialize() {
                 m_bStructure = StructureIdentifier_Animation;
@@ -477,8 +466,8 @@ namespace das2 {
 
         public:
             AnimationChannel() = default;
-            AnimationChannel(const AnimationChannel& _animationChannel);
-            AnimationChannel(AnimationChannel& _animationChannel);
+            AnimationChannel(const AnimationChannel& _animationChannel) = default;
+            AnimationChannel(AnimationChannel&& _animationChannel) noexcept = default;
 
             inline void Initialize() {
                 m_bStructure = StructureIdentifier_AnimationChannel;
@@ -503,8 +492,8 @@ namespace das2 {
 
         public:
             MaterialPhong() = default;
-            MaterialPhong(const MaterialPhong& _materialPhong);
-            MaterialPhong(MaterialPhong&& _materialPhong);
+            MaterialPhong(const MaterialPhong& _materialPhong) = default;
+            MaterialPhong(MaterialPhong&& _materialPhong) noexcept = default;
 
             inline void Initialize() {
                 m_bStructure = StructureIdentifier_MaterialPhong;
@@ -533,8 +522,8 @@ namespace das2 {
         
         public:
             MaterialPbr() = default;
-            MaterialPbr(const MaterialPbr& _materialPbr);
-            MaterialPbr(MaterialPbr&& _materialPbr);
+            MaterialPbr(const MaterialPbr& _materialPbr) = default;
+            MaterialPbr(MaterialPbr&& _materialPbr) noexcept = default;
 
             inline void Initialize() {
                 m_bStructure = StructureIdentifier_MaterialPbr;
@@ -545,8 +534,8 @@ namespace das2 {
 
     struct Model {
         Model() = default;
-        Model(const Model& _model);
-        Model(Model&& _model);
+        Model(const Model& _model) = default;
+        Model(Model&& _model) noexcept = default;
 
         Header header;
         Buffer buffer;

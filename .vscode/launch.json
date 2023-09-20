@@ -18,7 +18,7 @@
             "request": "launch",
             "name": "ConvertWavefrontObj",
             "target": "${workspaceFolder}/Build/ConvertWavefrontObj",
-            "arguments": "cube.obj cube_uncompressed.das2",
+            "arguments": "/mnt/Important/Documents/Models/cadnav.com/obj/1967_Maserati_Ghibli_Coupe/Maserati\\ Ghibli.obj Maserati_Ghibli.das2 9",
             "cwd": "${workspaceFolder}/Build",
             "valuesFormatting": "parseText"
         },

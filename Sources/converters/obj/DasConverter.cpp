@@ -170,23 +170,20 @@ namespace das2 {
 
         void DasConverter::_Convert() {
             m_model.meshGroups.emplace_back();
-            m_model.meshGroups.back().bStructure = StructureIdentifier_Buffer;
-            m_model.meshGroups.back().uMeshCount = m_obj.groups.size();
-            m_model.meshGroups.back().szName = "Wavefront obj mesh";
-            m_model.meshGroups.back().pMeshes = new uint32_t[m_model.meshGroups.back().uMeshCount];
+            m_model.meshGroups.back().Initialize();
+            m_model.meshGroups.back().meshes.resize(m_obj.groups.size());
 
-            for (uint32_t i = 0; i < m_model.meshGroups.back().uMeshCount; i++)
-                m_model.meshGroups.back().pMeshes[i] = i;
+            for (uint32_t i = 0; i < m_model.meshGroups.back().meshes.size(); i++)
+                m_model.meshGroups.back().meshes[i] = i;
 
             // for each group
             for (auto groupIt = m_obj.groups.begin(); groupIt != m_obj.groups.end(); groupIt++) {
                 m_model.meshes.emplace_back();
-                m_model.meshes.back().bStructure = StructureIdentifier_Mesh;
+                m_model.meshes.back().Initialize();
                 m_model.meshes.back().bMaterialType = MaterialType_Unknown;
                 m_model.meshes.back().uMaterialId = -1;
 
                 if (m_obj.vertices.geometricVertices.size()) {
-                    m_model.meshes.back().uPositionVertexBufferId = 0;
                     m_model.meshes.back().uPositionVertexBufferOffset = static_cast<uint32_t>(m_reindexedVertexPositions.size() * sizeof(TRS::Vector3<float>));
                 }
 
@@ -209,54 +206,27 @@ namespace das2 {
             }
 
             // set vertex offsets correctly
+            m_model.buffer.Initialize();
+            uint32_t uVertexBufferOffset = m_model.buffer.PushRange(m_reindexedVertexPositions.begin(), m_reindexedVertexPositions.end());
+            uint32_t uUVBufferOffset = m_model.buffer.PushRange(m_reindexedUVPositions.begin(), m_reindexedUVPositions.end());
+            uint32_t uVertexNormalBufferOffset = m_model.buffer.PushRange(m_reindexedNormals.begin(), m_reindexedNormals.end());
+            uint32_t uIndexBufferOffset = m_model.buffer.PushRange(m_indices.begin(), m_indices.end());
+
             for (auto it = m_model.meshes.begin(); it != m_model.meshes.end(); it++) {
-                it->uPositionVertexBufferId = 0;
-                it->uPositionVertexBufferOffset = 0;
+                it->uPositionVertexBufferOffset = uVertexBufferOffset;
 
                 if (m_obj.vertices.textureVertices.size()) {
-                    for (size_t i = 0; i < 8; i++) {
-                        it->arrUVBufferIds[i] = 0;
-                        it->arrUVBufferOffsets[i] = static_cast<uint32_t>(m_reindexedVertexPositions.size() * sizeof(TRS::Vector2<float>));
+                    for (size_t i = 0; i < it->arrUVBufferOffsets.size(); i++) {
+                        it->arrUVBufferOffsets[i] = uUVBufferOffset;
                     }
                 }
 
                 if (m_obj.vertices.vertexNormals.size()) {
-                    it->uSurfaceNormalBufferId = 0;
-                    it->uSurfaceNormalBufferOffset += static_cast<uint32_t>(m_reindexedVertexPositions.size() * sizeof(TRS::Vector3<float>) + 
-                                                                            m_reindexedUVPositions.size() * sizeof(TRS::Vector2<float>));
+                    it->uVertexNormalBufferOffset = uVertexNormalBufferOffset;
                 }
+
+                it->uIndexBufferOffset = uIndexBufferOffset;
             }
-
-
-            m_model.buffer.bStructure = StructureIdentifier_Buffer;
-            m_model.buffer.uLength = static_cast<uint32_t>(m_reindexedVertexPositions.size() * sizeof(TRS::Vector3<float>) + 
-                                                           m_reindexedUVPositions.size() * sizeof(TRS::Vector2<float>) + 
-                                                           m_reindexedUVPositions.size() * sizeof(TRS::Vector3<float>) +
-                                                           m_indices.size() * sizeof(uint32_t));
-            m_model.buffer.pData = new char[m_model.buffer.uLength]{};
-
-            std::memcpy(m_model.buffer.pData, m_reindexedVertexPositions.data(), m_reindexedVertexPositions.size() * sizeof(TRS::Vector3<float>));
-            size_t uOffset = m_reindexedVertexPositions.size() * sizeof(TRS::Vector3<float>);
-
-            m_reindexedVertexPositions = std::vector<TRS::Vector3<float>>();
-
-            if (m_reindexedUVPositions.size()) {
-                std::memcpy(m_model.buffer.pData + uOffset, m_reindexedUVPositions.data(), m_reindexedUVPositions.size() * sizeof(TRS::Vector2<float>));
-                uOffset += m_reindexedUVPositions.size() * sizeof(TRS::Vector2<float>);
-            }
-            m_reindexedUVPositions = std::vector<TRS::Vector2<float>>();
-
-            if (m_reindexedNormals.size()) {
-                std::memcpy(m_model.buffer.pData + uOffset, m_reindexedNormals.data(), m_reindexedNormals.size() * sizeof(TRS::Vector3<float>));
-                uOffset += m_reindexedNormals.size() * sizeof(TRS::Vector3<float>);
-            }
-            m_reindexedNormals = std::vector<TRS::Vector3<float>>();
-
-            // copy indices
-            if (m_indices.size()) {
-                std::memcpy(m_model.buffer.pData + uOffset, m_indices.data(), m_indices.size() * sizeof(uint32_t));
-            }
-            m_indices = std::vector<uint32_t>();
         }
     }
 }

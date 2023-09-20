@@ -7,6 +7,28 @@
 
 namespace das2 {
 
+    Buffer::Buffer(const Buffer& _buffer) {
+        if (_buffer.m_uLength) {
+            m_uLength = _buffer.m_uLength;
+            m_pData = new char[m_uLength];
+            std::memcpy(m_pData, _buffer.m_pData, m_uLength);
+        }
+    }
+
+
+    Buffer::Buffer(Buffer&& _buffer) noexcept {
+        m_uLength = _buffer.m_uLength;
+        m_pData = _buffer.m_pData;
+
+        _buffer.m_uLength = 0;
+        _buffer.m_pData = nullptr;
+    }
+
+
+    Buffer::~Buffer() {
+        delete[] m_pData;
+    }
+
     std::ostream& operator<<(std::ostream& _stream, const BinString& _szData) {
         const uint16_t uLength = _szData.Length();
         const cvar::hash_t hshString = _szData.Hash();
@@ -47,20 +69,14 @@ namespace das2 {
 
     std::ostream& operator<<(std::ostream& _stream, const Mesh& _mesh) {
         _stream.write(reinterpret_cast<const char*>(&_mesh.m_bStructure), sizeof(StructureIdentifier));
-        _stream.write(reinterpret_cast<const char*>(&_mesh.uIndexBufferId), sizeof(uint32_t));
         _stream.write(reinterpret_cast<const char*>(&_mesh.uIndexBufferOffset), sizeof(uint32_t));
         _stream.write(reinterpret_cast<const char*>(&_mesh.uDrawCount), sizeof(uint32_t));
-        _stream.write(reinterpret_cast<const char*>(&_mesh.uPositionVertexBufferId), sizeof(uint32_t));
         _stream.write(reinterpret_cast<const char*>(&_mesh.uPositionVertexBufferOffset), sizeof(uint32_t));
-        _stream.write(reinterpret_cast<const char*>(&_mesh.uSurfaceNormalBufferId), sizeof(uint32_t));
-        _stream.write(reinterpret_cast<const char*>(&_mesh.uSurfaceNormalBufferOffset), sizeof(uint32_t));
-        _stream.write(reinterpret_cast<const char*>(&_mesh.arrUVBufferIds), sizeof(std::array<uint32_t, 8>));
+        _stream.write(reinterpret_cast<const char*>(&_mesh.uVertexNormalBufferOffset), sizeof(uint32_t));
         _stream.write(reinterpret_cast<const char*>(&_mesh.arrUVBufferOffsets), sizeof(std::array<uint32_t, 8>));
         _stream.write(reinterpret_cast<const char*>(&_mesh.uColorMultiplierId), sizeof(uint32_t));
         _stream.write(reinterpret_cast<const char*>(&_mesh.uColorMultiplierOffset), sizeof(uint32_t));
-        _stream.write(reinterpret_cast<const char*>(&_mesh.arrSkeletalJointIndexBufferIds), sizeof(std::array<uint32_t, 8>));
         _stream.write(reinterpret_cast<const char*>(&_mesh.arrSkeletalJointIndexBufferOffsets), sizeof(std::array<uint32_t, 8>));
-        _stream.write(reinterpret_cast<const char*>(&_mesh.arrSkeletalJointWeightBufferIds), sizeof(std::array<uint32_t, 8>));
         _stream.write(reinterpret_cast<const char*>(&_mesh.arrSkeletalJointWeightBufferOffsets), sizeof(std::array<uint32_t, 8>));
         _stream.write(reinterpret_cast<const char*>(&_mesh.bMaterialType), sizeof(MaterialType));
         _stream.write(reinterpret_cast<const char*>(&_mesh.uMaterialId), sizeof(uint32_t));
