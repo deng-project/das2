@@ -14,24 +14,33 @@ set(DAS2_SOURCES
 
 # Third-party format converter support
 if (DAS2_WAVEFRONT_OBJ)
-    list(APPEND DAS2_HEADERS 
-        ${CMAKE_CURRENT_SOURCE_DIR}/Include/das2/converters/obj/DasConverter.h
+	set (WAVEFRONT_OBJ_HEADERS
+		${CMAKE_CURRENT_SOURCE_DIR}/Include/das2/converters/obj/DasConverter.h
         ${CMAKE_CURRENT_SOURCE_DIR}/Include/das2/Exceptions.h
         ${CMAKE_CURRENT_SOURCE_DIR}/Include/das2/converters/obj/Data.h
         ${CMAKE_CURRENT_SOURCE_DIR}/Include/das2/converters/obj/Unserializer.h)
-    list(APPEND DAS2_SOURCES
-        ${CMAKE_CURRENT_SOURCE_DIR}/Sources/converters/obj/DasConverter.cpp
+	set (WAVEFRONT_OBJ_SOURCES
+		${CMAKE_CURRENT_SOURCE_DIR}/Sources/converters/obj/DasConverter.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/Sources/converters/obj/Unserializer.cpp)
+		
+    list(APPEND DAS2_HEADERS ${WAVEFRONT_OBJ_HEADERS})
+    list(APPEND DAS2_SOURCES ${WAVEFRONT_OBJ_SOURCES})
+	
+	source_group("WavefrontObj" FILES ${WAVEFRONT_OBJ_HEADERS} ${WAVEFRONT_OBJ_SOURCES})
 endif()
 
 if (NOT DAS2_BUILD_STATIC)
     add_library(${DAS2_TARGET} SHARED
         ${DAS2_HEADERS}
         ${DAS2_SOURCES})
+	target_compile_definitions(${DAS2_TARGET}
+		PRIVATE DAS2_EXPORT_LIBRARY)
 else()
     add_library(${DAS2_TARGET} STATIC
         ${DAS2_HEADERS}
         ${DAS2_SOURCES})
+	target_compile_definitions(${DAS2_TARGET}
+		PUBLIC DAS2_BUILD_STATIC)
 endif()
 
 add_dependencies(${DAS2_TARGET} cvar)
@@ -39,6 +48,12 @@ add_dependencies(${DAS2_TARGET} cvar)
 find_package(Boost REQUIRED COMPONENTS iostreams)
 find_package(zstd CONFIG REQUIRED)
 message(STATUS "")
+
+if (WIN32 AND MSVC)
+	target_compile_definitions(${DAS2_TARGET}
+		PRIVATE DAS2_EXPORT_LIBRARY)
+endif()
+
 target_link_libraries(${DAS2_TARGET}
     PUBLIC cvar
     PRIVATE Boost::boost 

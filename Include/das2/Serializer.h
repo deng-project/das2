@@ -8,7 +8,6 @@
 #include <das2/Api.h>
 #include <das2/DasStructures.h>
 #include <ostream>
-#include <zlib.h>
 
 namespace das2 {
 

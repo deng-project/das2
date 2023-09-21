@@ -4,6 +4,7 @@
 // author: Karl-Mihkel Ott
 
 #include <string>
+#include <iostream>
 #include <das2/converters/obj/Unserializer.h>
 
 namespace das2 {
@@ -80,19 +81,9 @@ namespace das2 {
         }
 
 
-        std::optional<KeywordToken> Unserializer::_TokenizeKeyword() {
-            std::string stdStr;
-            while (m_stream.peek() != -1 && !_Contains(m_stream.peek(), " \t\n\r", 4))
-                stdStr += static_cast<char>(m_stream.get());
-
-            BinString str = stdStr;
-            if (m_cObjKeywords.find(str) != m_cObjKeywords.end())
-                return m_cObjKeywords.find(str)->second;
-
-            while (!stdStr.empty()) {
-                m_stream.unget();
-                stdStr.pop_back();
-            }
+        std::optional<KeywordToken> Unserializer::_TokenizeKeyword(const BinString& _str) {
+            if (m_cObjKeywords.find(_str) != m_cObjKeywords.end())
+                return m_cObjKeywords.find(_str)->second;
 
             return std::nullopt;
         }
@@ -105,6 +96,7 @@ namespace das2 {
             if (m_stream.peek() == -1)
                 return false;
 
+            // skip whitespaces
             while (m_stream.peek() != -1 && _Contains(m_stream.peek(), " \t\n\r", 4)) {
                 if (static_cast<char>(m_stream.peek()) == '\n')
                     m_uLineCounter++;
@@ -114,7 +106,13 @@ namespace das2 {
             if (m_stream.peek() == -1)
                 return false;
 
-            if (_TryValueTokenization(_TokenizeKeyword()) || _TryValueTokenization(_TokenizeString<BinString>(false))) {
+            // try to extract a word
+            std::string sWord;
+            while (m_stream.peek() != -1 && !_Contains(m_stream.peek(), " \t\n\r", 4)) {
+                sWord += static_cast<char>(m_stream.get());
+            }
+
+            if (_TryValueTokenization(_TokenizeKeyword(sWord)) || _TryValueTokenization<BinString>(sWord)) {
                 return true;
             }
 

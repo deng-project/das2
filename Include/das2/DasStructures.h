@@ -25,7 +25,7 @@
 
 namespace das2 {
 
-    class BinString {
+    class DAS2_API BinString {
         private:
             uint16_t m_uLength = 0;
             cvar::hash_t m_hshString = 0;

@@ -85,7 +85,7 @@ namespace das2 {
             for (auto it = m_triangulizedFaces.begin(); it != m_triangulizedFaces.end(); it++) {
                 for (auto vIt = it->begin(); vIt != it->end(); vIt++) {
                     if (matchingVertexMap.find(vIt->x) != matchingVertexMap.end())
-                        vIt->z = matchingVertexMap[vIt->z].second;
+                        vIt->z = matchingVertexMap[vIt->x].second;
                 }
             }
         }

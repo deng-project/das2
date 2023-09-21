@@ -109,7 +109,7 @@ namespace das2 {
 
 
             private:
-                std::optional<KeywordToken> _TokenizeKeyword();
+                std::optional<KeywordToken> _TokenizeKeyword(const BinString& _str);
                 bool _NextToken();
                 void _SkipLine();
                 void _SkipToNextKeyword();
@@ -152,7 +152,7 @@ namespace das2 {
                             return vec;
                         }
 
-                        vec[i] = static_cast<decltype(vec.first)>(std::stof(std::get<TokenIndex_String>(m_token.token).CString()));
+                        vec[i] = static_cast<std::remove_reference<decltype(vec[0])>::type>(std::stof(std::get<TokenIndex_String>(m_token.token).CString()));
                     }
 
                     if (i < _uMin) {

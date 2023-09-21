@@ -10,6 +10,7 @@
 #include <cstddef>
 #include <cstring>
 #include <cmath>
+#include <string>
 #include <trs/Iterators.h>
 #include <trs/Vector.h>
 

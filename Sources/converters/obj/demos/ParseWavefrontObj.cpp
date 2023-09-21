@@ -81,12 +81,23 @@ namespace das2 {
 
 
 int main(int argc, char* argv[]) {
+    std::ios_base::sync_with_stdio(false);
+    std::cin.tie(0);
+
     if (argc < 2) {
-        std::cout << "Usage ParseWavefrontObj <file>\n";
+        std::cout << "Usage: ./ParseWavefrontObj <file>\n";
         return 3;
     }
 
-    das2::demo::ParseWavefrontObj application(argv[1]);
-    application.PrintOutput();
+    try {
+        das2::demo::ParseWavefrontObj application(argv[1]);
+        application.PrintOutput();
+    }
+    catch (const cvar::SyntaxErrorException& e) {
+        std::cerr << e.what() << '\n';
+    }
+    catch (const cvar::UnexpectedEOFException& e) {
+        std::cerr << e.what() << '\n';
+    }
     return 0;
 }

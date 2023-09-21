@@ -28,6 +28,7 @@ include(${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/vcpkg/scripts/buildsystems/vcpkg.
 
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
+set (CVAR_STATIC ON CACHE BOOL "Build cvar library as static")
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/cvar)
 include(${CMAKE_CURRENT_SOURCE_DIR}/CMake/libdas2.cmake)
 
