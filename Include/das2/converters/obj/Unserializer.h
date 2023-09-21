@@ -152,7 +152,7 @@ namespace das2 {
                             return vec;
                         }
 
-                        vec[i] = static_cast<std::remove_reference<decltype(vec[0])>::type>(std::stof(std::get<TokenIndex_String>(m_token.token).CString()));
+                        vec[i] = static_cast<typename std::remove_reference<decltype(vec[0])>::type>(std::stof(std::get<TokenIndex_String>(m_token.token).CString()));
                     }
 
                     if (i < _uMin) {
