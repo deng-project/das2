@@ -47,21 +47,20 @@ namespace das2 {
         }
 
 
-        void DasConverter::_SmoothenNormals(const Group& _group) {
+        void DasConverter::_SmoothenNormals(size_t _uTriangulizationOffset) {
             // key: vertex position index
             // value vector: all normal ids
-            std::unordered_map<uint32_t, std::pair<std::vector<uint32_t>, uint32_t>> matchingVertexMap;
-
-            for (auto faceIt = _group.elements.faces.begin(); faceIt != _group.elements.faces.end(); faceIt++) {
+            std::unordered_map<uint32_t, std::vector<uint32_t>> matchingVertexMap;
+            for (auto faceIt = m_triangulizedFaces.begin() + _uTriangulizationOffset; faceIt != m_triangulizedFaces.end(); faceIt++) {
                 for (auto vIt = faceIt->begin(); vIt != faceIt->end(); vIt++) {
-                    matchingVertexMap[vIt->x].first.push_back(vIt->z);
+                    matchingVertexMap[vIt->x].push_back(vIt->z);
                 }
             }
 
             // substitude normals
             for (auto mapIt = matchingVertexMap.begin(); mapIt != matchingVertexMap.end(); mapIt++) {
                 TRS::Vector3<float> meanNormal;
-                for (auto matchIt = mapIt->second.first.begin(); matchIt != mapIt->second.first.end(); matchIt++) {
+                for (auto matchIt = mapIt->second.begin(); matchIt != mapIt->second.end(); matchIt++) {
                     if (*matchIt != static_cast<uint32_t>(-1))
                         meanNormal += m_obj.vertices.vertexNormals[*matchIt];
                     else {
@@ -70,51 +69,18 @@ namespace das2 {
                 }
                 meanNormal.Normalise();
 
-                // check if meanNormal is present in maps
-                if (m_mapNormals.find(meanNormal) != m_mapNormals.end())
-                    mapIt->second.second = m_mapNormals[meanNormal];
-                else {
-                    uint32_t uNormalId = static_cast<uint32_t>(m_smoothenedNormals.size());
-                    m_smoothenedNormals.push_back(meanNormal);
-                    m_mapNormals[meanNormal] = uNormalId;
-                    mapIt->second.second = uNormalId;
-                }
-            }
-
-            // replace vertex normals
-            for (auto it = m_triangulizedFaces.begin(); it != m_triangulizedFaces.end(); it++) {
-                for (auto vIt = it->begin(); vIt != it->end(); vIt++) {
-                    if (matchingVertexMap.find(vIt->x) != matchingVertexMap.end())
-                        vIt->z = matchingVertexMap[vIt->x].second;
+                for (auto matchIt = mapIt->second.begin(); matchIt != mapIt->second.end(); matchIt++) {
+                    m_obj.vertices.vertexNormals[*matchIt] = meanNormal;
                 }
             }
         }
 
 
-        void DasConverter::_ReduceNormalRedundancy(const Group& _group) {
-            // for each face in group
-            for (auto faceIt = m_triangulizedFaces.begin(); faceIt != m_triangulizedFaces.end(); faceIt++) {
-                // for each vertex in face
-                for (auto vIt = faceIt->begin(); vIt != faceIt->end(); vIt++) {
-                    if (vIt->z != static_cast<uint32_t>(-1)) {
-                        if (m_mapNormals.find(m_obj.vertices.vertexNormals[vIt->z]) != m_mapNormals.end()) {
-                            vIt->z = m_mapNormals[m_obj.vertices.vertexNormals[vIt->z]];
-                        } else {
-                            uint32_t uNormalId = static_cast<uint32_t>(m_smoothenedNormals.size());
-                            m_smoothenedNormals.push_back(m_obj.vertices.vertexNormals[vIt->z]);
-                            vIt->z = uNormalId;
-                        }
-                    }
-                }
-            }
-        }
-
-
-        void DasConverter::_Reindex() {
+        void DasConverter::_Reindex(size_t _uTriangulizedOffset) {
             uint32_t uMaxIndex = 0;
             uint8_t bNoVerticesMask = 0;
 
-            for (auto faceIt = m_triangulizedFaces.begin(); faceIt != m_triangulizedFaces.end(); faceIt++) {
+            for (auto faceIt = m_triangulizedFaces.begin() + _uTriangulizedOffset; faceIt != m_triangulizedFaces.end(); faceIt++) {
                 for (auto vIt = faceIt->begin(); vIt != faceIt->end(); vIt++) {
                     UnifiedVertex unifiedVertex = {};
                     if (vIt->x != static_cast<uint32_t>(-1)) {
@@ -141,9 +107,9 @@ namespace das2 {
                     if (vIt->z != static_cast<uint32_t>(-1)) {
                         if (bNoVerticesMask & (1 << 2))
                             throw ConvertionLogicException("Wavefront obj: Mesh must have uniform amount of vertex attributes accross all faces!");
-                        unifiedVertex.normalVertex.first = m_smoothenedNormals[vIt->z].first;
-                        unifiedVertex.normalVertex.second = m_smoothenedNormals[vIt->z].second;
-                        unifiedVertex.normalVertex.third = m_smoothenedNormals[vIt->z].third;
+                        unifiedVertex.normalVertex.first = m_obj.vertices.vertexNormals[vIt->z].first;
+                        unifiedVertex.normalVertex.second = m_obj.vertices.vertexNormals[vIt->z].second;
+                        unifiedVertex.normalVertex.third = m_obj.vertices.vertexNormals[vIt->z].third;
                     }
                     else if (!m_obj.vertices.vertexNormals.empty())
                         throw ConvertionLogicException("Wavefront obj: Mesh must have uniform amount of vertex attributes accross all faces!");
@@ -156,7 +122,7 @@ namespace das2 {
                         if (vIt->y != static_cast<uint32_t>(-1))
                             m_reindexedUVPositions.push_back(unifiedVertex.textureVertex);
                         if (vIt->z != static_cast<uint32_t>(-1))
-                            m_reindexedVertexPositions.push_back(unifiedVertex.positionVertex);
+                            m_reindexedNormals.push_back(unifiedVertex.normalVertex);
 
                         m_indices.push_back(uMaxIndex++);
                         m_reindexMap[unifiedVertex] = m_indices.back();
@@ -188,20 +154,20 @@ namespace das2 {
                 }
 
                 // for each face try to triangulize it
+                size_t uTriangulizationOffset = m_triangulizedFaces.size();
                 for (auto faceIt = groupIt->elements.faces.begin(); faceIt != groupIt->elements.faces.end(); faceIt++) {
                     _TriangulizeFace(*faceIt);
                 }
 
                 // check if smooth shading is enabled 
                 if (groupIt->bSmoothing) {
-                    _SmoothenNormals(*groupIt);
-                } else {
-                    _ReduceNormalRedundancy(*groupIt);
+                    _SmoothenNormals(uTriangulizationOffset);
                 }
 
                 size_t uPrevCount = m_indices.size();
-                _Reindex();
-
+                
+                m_model.meshes.back().uIndexBufferOffset = static_cast<uint32_t>(uPrevCount * sizeof(uint32_t));
+                _Reindex(uTriangulizationOffset);
                 m_model.meshes.back().uDrawCount = static_cast<uint32_t>(m_indices.size() - uPrevCount);
             }
 
@@ -225,8 +191,16 @@ namespace das2 {
                     it->uVertexNormalBufferOffset = uVertexNormalBufferOffset;
                 }
 
-                it->uIndexBufferOffset = uIndexBufferOffset;
+                it->uIndexBufferOffset += uIndexBufferOffset;
             }
+
+            m_model.nodes.emplace_back();
+            m_model.nodes.back().Initialize();
+            m_model.nodes.back().uMeshGroupId = 0;
+        
+            m_model.scenes.emplace_back();
+            m_model.scenes.back().Initialize();
+            m_model.scenes.back().rootNodes.push_back(0);
         }
     }
 }

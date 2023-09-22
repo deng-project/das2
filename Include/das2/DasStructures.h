@@ -222,8 +222,14 @@ namespace das2 {
                 std::size_t uDistance = std::distance(_first, _last);
                 
                 const uint32_t uOffset = m_uLength;
-                m_uLength += static_cast<uint32_t>(uDistance);
-                m_pData = static_cast<char*>(std::realloc(m_pData, m_uLength));
+                
+                m_uLength += static_cast<uint32_t>(uDistance * sizeof(typename std::remove_reference<decltype(*_first)>::type));
+                if (m_pData && m_uLength) {
+                    m_pData = static_cast<char*>(std::realloc(m_pData, m_uLength));
+                }
+                else {
+                    m_pData = static_cast<char*>(std::malloc(m_uLength));
+                }
 
                 if (!m_pData)
                     throw std::bad_alloc();

@@ -35,7 +35,8 @@ namespace das2 {
 
         _stream.write(reinterpret_cast<const char*>(&uLength), sizeof(uint16_t));
         _stream.write(reinterpret_cast<const char*>(&hshString), sizeof(cvar::hash_t));
-        _stream.write(_szData.CString(), uLength + 1);
+        if (_szData.CString() && uLength)
+            _stream.write(_szData.CString(), uLength + 1);
         return _stream;
     }
     

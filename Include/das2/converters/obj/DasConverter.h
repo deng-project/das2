@@ -75,9 +75,8 @@ namespace das2 {
         
         class DAS2_API DasConverter : public IConverter {
             private:
-                const Object& m_obj;
+                Object m_obj;
                 std::unordered_map<TRS::Vector3<float>, uint32_t> m_mapNormals;
-                std::vector<TRS::Vector3<float>> m_smoothenedNormals;
                 std::vector<std::array<TRS::Point3D<uint32_t>, 3>> m_triangulizedFaces;
 
                 std::unordered_map<UnifiedVertex, uint32_t> m_reindexMap;
@@ -90,9 +89,8 @@ namespace das2 {
             private:
                 void _Convert();
                 void _TriangulizeFace(const std::vector<TRS::Point3D<uint32_t>>& _face);
-                void _SmoothenNormals(const Group& _group);
-                void _ReduceNormalRedundancy(const Group& _group);
-                void _Reindex();
+                void _SmoothenNormals(size_t _uTriangulizationOffset);
+                void _Reindex(size_t _uTriangulizationOffset);
 
             public:
                 DasConverter(const Object& _obj, const BinString& _szAuthorName = "", const BinString& _szComment = "", uint8_t _uZLibLevel = 0);
