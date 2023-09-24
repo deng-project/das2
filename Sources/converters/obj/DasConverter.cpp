@@ -17,7 +17,7 @@ namespace das2 {
             IConverter(_szAuthorName, _szComment, _bZLibLevel),
             m_obj(_obj)
         {
-            _Convert();
+            _CreateModel();
         }
 
 
@@ -76,99 +76,118 @@ namespace das2 {
         }
 
 
-        void DasConverter::_Reindex(size_t _uTriangulizedOffset) {
-            uint32_t uMaxIndex = 0;
-            uint8_t bNoVerticesMask = 0;
+        void DasConverter::_GenerateVertexNormals(const std::pair<size_t, size_t>& _draw) {
+            m_reindexedNormals.reserve(m_reindexedNormals.size() + _draw.second * 3);
 
-            for (auto faceIt = m_triangulizedFaces.begin() + _uTriangulizedOffset; faceIt != m_triangulizedFaces.end(); faceIt++) {
-                for (auto vIt = faceIt->begin(); vIt != faceIt->end(); vIt++) {
-                    UnifiedVertex unifiedVertex = {};
-                    if (vIt->x != static_cast<uint32_t>(-1)) {
-                        unifiedVertex.positionVertex.first = m_obj.vertices.geometricVertices[vIt->x].first;
-                        unifiedVertex.positionVertex.second = m_obj.vertices.geometricVertices[vIt->x].second;
-                        unifiedVertex.positionVertex.third = m_obj.vertices.geometricVertices[vIt->x].third;
-                    }
-                    else {
-                        throw ConvertionLogicException("Wavefront obj: Mesh must have psoition vertex present in its faces");
+            for (size_t i = _draw.first; i < _draw.second; i++) {
+                TRS::Vector3<float> v1= {
+                    m_obj.vertices.geometricVertices[m_triangulizedFaces[i][0].x][0],
+                    m_obj.vertices.geometricVertices[m_triangulizedFaces[i][0].x][1],
+                    m_obj.vertices.geometricVertices[m_triangulizedFaces[i][0].x][2],
+                };
+
+                TRS::Vector3<float> v2 = {
+                    m_obj.vertices.geometricVertices[m_triangulizedFaces[i][1].x][0],
+                    m_obj.vertices.geometricVertices[m_triangulizedFaces[i][1].x][1],
+                    m_obj.vertices.geometricVertices[m_triangulizedFaces[i][1].x][2],
+                };
+
+                TRS::Vector3<float> v3 = {
+                    m_obj.vertices.geometricVertices[m_triangulizedFaces[i][2].x][0],
+                    m_obj.vertices.geometricVertices[m_triangulizedFaces[i][2].x][1],
+                    m_obj.vertices.geometricVertices[m_triangulizedFaces[i][2].x][2],
+                };
+
+                auto normal = TRS::Vector3<float>::Cross(v2 - v1, v3 - v1);
+                normal.Normalise();
+                m_reindexedNormals.emplace_back(normal);
+                m_reindexedNormals.emplace_back(normal);
+                m_reindexedNormals.emplace_back(normal);
+            }
+        }
+
+
+        void DasConverter::_OmitIndices(const std::pair<size_t, size_t>& _draw) {
+            for (size_t i = _draw.first; i < _draw.second; i++) {
+                for (auto vIt = m_triangulizedFaces[i].begin(); vIt != m_triangulizedFaces[i].end(); vIt++) {
+                    if (vIt->x != -1) {
+                        TRS::Vector3<float> v = {
+                            m_obj.vertices.geometricVertices[vIt->x][0],
+                            m_obj.vertices.geometricVertices[vIt->x][1],
+                            m_obj.vertices.geometricVertices[vIt->x][2],
+                        };
+                        m_reindexedVertexPositions.emplace_back(v);
                     }
 
-                    if (vIt->y != static_cast<uint32_t>(-1)) {
-                        if (bNoVerticesMask & (1 << 1))
-                            throw ConvertionLogicException("Wavefront obj: Mesh must have uniform amount of vertex attributes accross all faces!");
-                        
-                        unifiedVertex.textureVertex.first = m_obj.vertices.textureVertices[vIt->y].first;
-                        unifiedVertex.textureVertex.second = m_obj.vertices.textureVertices[vIt->y].second;
-                    }
-                    else if (!m_obj.vertices.textureVertices.empty())
-                        throw ConvertionLogicException("Wavefront obj: Mesh must have uniform amount of vertex attributes accross all faces!");
-                    else
-                        bNoVerticesMask |= (1 << 1);
+                    if (vIt->y != -1) {
+                        TRS::Vector2<float> v = {
+                            m_obj.vertices.textureVertices[vIt->y][0],
+                            m_obj.vertices.textureVertices[vIt->y][1],
+                        };
 
-                    if (vIt->z != static_cast<uint32_t>(-1)) {
-                        if (bNoVerticesMask & (1 << 2))
-                            throw ConvertionLogicException("Wavefront obj: Mesh must have uniform amount of vertex attributes accross all faces!");
-                        unifiedVertex.normalVertex.first = m_obj.vertices.vertexNormals[vIt->z].first;
-                        unifiedVertex.normalVertex.second = m_obj.vertices.vertexNormals[vIt->z].second;
-                        unifiedVertex.normalVertex.third = m_obj.vertices.vertexNormals[vIt->z].third;
+                        m_reindexedUVPositions.emplace_back(v);
                     }
-                    else if (!m_obj.vertices.vertexNormals.empty())
-                        throw ConvertionLogicException("Wavefront obj: Mesh must have uniform amount of vertex attributes accross all faces!");
-                    else bNoVerticesMask |= (1 << 2);
 
-                    // check if vertex exists in map
-                    if (m_reindexMap.find(unifiedVertex) != m_reindexMap.end()) {
-                        if (vIt->x != static_cast<uint32_t>(-1))
-                            m_reindexedVertexPositions.push_back(unifiedVertex.positionVertex);
-                        if (vIt->y != static_cast<uint32_t>(-1))
-                            m_reindexedUVPositions.push_back(unifiedVertex.textureVertex);
-                        if (vIt->z != static_cast<uint32_t>(-1))
-                            m_reindexedNormals.push_back(unifiedVertex.normalVertex);
-
-                        m_indices.push_back(uMaxIndex++);
-                        m_reindexMap[unifiedVertex] = m_indices.back();
-                    } else {
-                        m_indices.push_back(m_reindexMap[unifiedVertex]);
-                    }
+                    if (vIt->z != -1)
+                        m_reindexedNormals.emplace_back(m_obj.vertices.vertexNormals[vIt->z]);
                 }
             }
         }
 
 
         void DasConverter::_Convert() {
-            m_model.meshGroups.emplace_back();
-            m_model.meshGroups.back().Initialize();
-            m_model.meshGroups.back().meshes.resize(m_obj.groups.size());
-
-            for (uint32_t i = 0; i < m_model.meshGroups.back().meshes.size(); i++)
-                m_model.meshGroups.back().meshes[i] = i;
+            // first: triangulizationOffset
+            // second: draw count
+            std::vector<std::pair<size_t, size_t>> twoAttrGroups;
 
             // for each group
             for (auto groupIt = m_obj.groups.begin(); groupIt != m_obj.groups.end(); groupIt++) {
-                m_model.meshes.emplace_back();
-                m_model.meshes.back().Initialize();
-                m_model.meshes.back().bMaterialType = MaterialType_Unknown;
-                m_model.meshes.back().uMaterialId = -1;
-
-                if (m_obj.vertices.geometricVertices.size()) {
-                    m_model.meshes.back().uPositionVertexBufferOffset = static_cast<uint32_t>(m_reindexedVertexPositions.size() * sizeof(TRS::Vector3<float>));
-                }
-
                 // for each face try to triangulize it
                 size_t uTriangulizationOffset = m_triangulizedFaces.size();
                 for (auto faceIt = groupIt->elements.faces.begin(); faceIt != groupIt->elements.faces.end(); faceIt++) {
                     _TriangulizeFace(*faceIt);
                 }
 
+                auto& firstVertex = groupIt->elements.faces.front().front();
                 // check if smooth shading is enabled 
-                if (groupIt->bSmoothing) {
+                if (firstVertex.z == -1 && groupIt->bSmoothing) {
                     _SmoothenNormals(uTriangulizationOffset);
                 }
 
-                size_t uPrevCount = m_indices.size();
-                
-                m_model.meshes.back().uIndexBufferOffset = static_cast<uint32_t>(uPrevCount * sizeof(uint32_t));
-                _Reindex(uTriangulizationOffset);
-                m_model.meshes.back().uDrawCount = static_cast<uint32_t>(m_indices.size() - uPrevCount);
+                // check if there are only position vertices
+                // if so then attempt to reindex them
+                if (firstVertex.x != -1 && firstVertex.y == -1) {
+                    twoAttrGroups.emplace_back(std::make_pair(uTriangulizationOffset, m_triangulizedFaces.size() - uTriangulizationOffset));
+                }
+                else if (firstVertex.x != -1) {
+                    m_model.meshes.emplace_back();
+                    m_model.meshes.back().Initialize();
+                    m_model.meshes.back().uDrawCount = static_cast<uint32_t>((m_triangulizedFaces.size() - uTriangulizationOffset) * 3);
+                    m_model.meshes.back().uPositionVertexBufferOffset = static_cast<uint32_t>(m_reindexedVertexPositions.size() * sizeof(TRS::Vector3<float>));
+                    
+                    for (auto uvIt = m_model.meshes.back().arrUVBufferOffsets.begin(); uvIt != m_model.meshes.back().arrUVBufferOffsets.end(); uvIt++)
+                        *uvIt = static_cast<uint32_t>(m_reindexedUVPositions.size() * sizeof(TRS::Vector2<float>));
+                    
+                    m_model.meshes.back().uVertexNormalBufferOffset = static_cast<uint32_t>(m_reindexedNormals.size() * sizeof(TRS::Vector3<float>));
+                    _OmitIndices(std::make_pair(uTriangulizationOffset, m_triangulizedFaces.size() - uTriangulizationOffset));
+                }
+            }
+
+            // for each two attribute group
+            for (auto groupIt = twoAttrGroups.begin(); groupIt != twoAttrGroups.end(); groupIt++) {
+                auto& firstVertex = m_triangulizedFaces[groupIt->first].front();
+
+                m_model.meshes.emplace_back();
+                m_model.meshes.back().uPositionVertexBufferOffset = m_reindexedVertexPositions.size();
+                m_model.meshes.back().uPositionVertexBufferOffset = m_reindexedNormals.size();
+                m_model.meshes.back().uDrawCount = static_cast<uint32_t>(groupIt->second);
+
+                // vertex normals are missing
+                if (firstVertex.z == -1) {
+                    _GenerateVertexNormals(*groupIt);
+                }
+
+                _OmitIndices(*groupIt);
             }
 
             // set vertex offsets correctly
@@ -179,28 +198,52 @@ namespace das2 {
             uint32_t uIndexBufferOffset = m_model.buffer.PushRange(m_indices.begin(), m_indices.end());
 
             for (auto it = m_model.meshes.begin(); it != m_model.meshes.end(); it++) {
-                it->uPositionVertexBufferOffset = uVertexBufferOffset;
+                it->uPositionVertexBufferOffset += uVertexBufferOffset;
 
                 if (m_obj.vertices.textureVertices.size()) {
                     for (size_t i = 0; i < it->arrUVBufferOffsets.size(); i++) {
-                        it->arrUVBufferOffsets[i] = uUVBufferOffset;
+                        it->arrUVBufferOffsets[i] += uUVBufferOffset;
                     }
                 }
 
                 if (m_obj.vertices.vertexNormals.size()) {
-                    it->uVertexNormalBufferOffset = uVertexNormalBufferOffset;
+                    it->uVertexNormalBufferOffset += uVertexNormalBufferOffset;
+                }
+            }
+        }
+
+        void DasConverter::_CreateModel() {
+            m_model.meshGroups.resize(m_obj.groups.size());
+            m_model.nodes.resize(m_obj.groups.size());
+
+            for (size_t i = 0; i < m_obj.groups.size(); i++) {
+                std::string sConcatName;
+                for (auto it = m_obj.groups[i].groupNames.begin(); it != m_obj.groups[i].groupNames.end(); it++) {
+                    if (it != m_obj.groups[i].groupNames.begin())
+                        sConcatName += '_';
+                    sConcatName += it->CString();
                 }
 
-                it->uIndexBufferOffset += uIndexBufferOffset;
+                m_model.meshGroups[i].szName = sConcatName;
+                m_model.meshGroups[i].meshes.emplace_back(static_cast<uint32_t>(i));
+                m_model.nodes[i].szName = sConcatName;
+                m_model.nodes[i].uMeshGroupId = i;
             }
 
-            m_model.nodes.emplace_back();
-            m_model.nodes.back().Initialize();
-            m_model.nodes.back().uMeshGroupId = 0;
-        
+            _Convert();
+
+            m_model.nodes.resize(m_model.meshGroups.size());
+            for (size_t i = 0; i < m_model.nodes.size(); i++) {
+                m_model.nodes[i].Initialize();
+                m_model.nodes.back().uMeshGroupId = static_cast<uint32_t>(i);
+            }
+
             m_model.scenes.emplace_back();
             m_model.scenes.back().Initialize();
-            m_model.scenes.back().rootNodes.push_back(0);
+
+            m_model.scenes.back().rootNodes.reserve(m_model.nodes.size());
+            for (size_t i = 0; i < m_model.nodes.size(); i++)
+                m_model.scenes.back().rootNodes.push_back(static_cast<uint32_t>(i));
         }
     }
 }

@@ -35,6 +35,8 @@ namespace das2 {
             BinString() = default;
             ~BinString() {
                 delete[] m_pData;
+                m_pData = nullptr;
+                m_uLength = 0;
             }
 
             BinString(const char* _szData) {
@@ -76,6 +78,9 @@ namespace das2 {
             }
 
             BinString& operator=(const BinString& _other) {
+                delete[] m_pData;
+                m_pData = nullptr;
+
                 m_uLength = _other.m_uLength;
                 m_hshString = _other.m_hshString;
                 

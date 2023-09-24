@@ -50,24 +50,6 @@ namespace std {
             return seed;
         }
     }; 
-
-    template <>
-    struct hash<das2::obj::UnifiedVertex> {
-        size_t operator()(const das2::obj::UnifiedVertex& _vt) const {
-            size_t seed = 0;
-            std::hash<float> hasher;
-            const size_t uPrime = 0x9e3779b9;
-
-            for (auto it = _vt.positionVertex.Begin(); it != _vt.positionVertex.End(); it++)
-                seed ^= hasher(*it) + uPrime + (seed << 6) + (seed >> 2);
-            for (auto it = _vt.normalVertex.Begin(); it != _vt.normalVertex.End(); it++)
-                seed ^= hasher(*it) + uPrime + (seed << 6) + (seed >> 2);
-            for (auto it = _vt.textureVertex.Begin(); it != _vt.textureVertex.End(); it++)
-                seed ^= hasher(*it) + uPrime + (seed << 6) + (seed >> 2);
-        
-            return seed;
-        };
-    };
 }
 
 namespace das2 {
@@ -79,7 +61,7 @@ namespace das2 {
                 std::unordered_map<TRS::Vector3<float>, uint32_t> m_mapNormals;
                 std::vector<std::array<TRS::Point3D<uint32_t>, 3>> m_triangulizedFaces;
 
-                std::unordered_map<UnifiedVertex, uint32_t> m_reindexMap;
+                std::unordered_map<TRS::Vector3<float>, uint32_t> m_reindexMap;
                 std::vector<TRS::Vector3<float>> m_reindexedVertexPositions;
                 std::vector<TRS::Vector2<float>> m_reindexedUVPositions;
                 std::vector<TRS::Vector3<float>> m_reindexedNormals;
@@ -88,9 +70,11 @@ namespace das2 {
 
             private:
                 void _Convert();
+                void _CreateModel();
                 void _TriangulizeFace(const std::vector<TRS::Point3D<uint32_t>>& _face);
                 void _SmoothenNormals(size_t _uTriangulizationOffset);
-                void _Reindex(size_t _uTriangulizationOffset);
+                void _GenerateVertexNormals(const std::pair<size_t, size_t>& _draw);
+                void _OmitIndices(const std::pair<size_t, size_t>& _draw);
 
             public:
                 DasConverter(const Object& _obj, const BinString& _szAuthorName = "", const BinString& _szComment = "", uint8_t _uZLibLevel = 0);

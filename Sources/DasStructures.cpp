@@ -26,7 +26,8 @@ namespace das2 {
 
 
     Buffer::~Buffer() {
-        delete[] m_pData;
+        if (m_uLength)
+            free(m_pData);
     }
 
     std::ostream& operator<<(std::ostream& _stream, const BinString& _szData) {

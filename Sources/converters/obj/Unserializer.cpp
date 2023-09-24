@@ -277,18 +277,20 @@ namespace das2 {
 
                     case KeywordToken::GroupName:
                     case KeywordToken::ObjectName:
-                        if (!m_root.groups.back().elements.faces.empty())
+                        if (m_root.groups.size() && !m_root.groups.back().elements.faces.empty())
                             m_root.groups.emplace_back();
                         _ReadGroup();
                         break;
 
                     case KeywordToken::SmoothingGroup:
-                        m_root.groups.emplace_back();
+                        if (m_root.groups.size() && !m_root.groups.back().elements.faces.empty())
+                            m_root.groups.emplace_back();
                         _ReadSmoothing();                        
                         break;
 
                     case KeywordToken::MaterialName:
-                        m_root.groups.emplace_back();
+                        if (m_root.groups.size() && !m_root.groups.back().elements.faces.empty())
+                            m_root.groups.emplace_back();
                         _ReadMaterialName();
                         break;
 
