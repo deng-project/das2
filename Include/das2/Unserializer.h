@@ -16,6 +16,10 @@ namespace das2 {
             std::istream& m_stream;
             Model m_model;
 
+        private:
+            void _ReadCompressed();
+            void _ReadUncompressed(std::istream& _stream);
+
         public:
             Unserializer(std::istream& _stream);
             void Unserialize();

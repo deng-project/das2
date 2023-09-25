@@ -7,10 +7,12 @@ set(DAS2_TARGET das2)
 set(DAS2_HEADERS
     ${CMAKE_CURRENT_SOURCE_DIR}/Include/das2/Api.h
     ${CMAKE_CURRENT_SOURCE_DIR}/Include/das2/DasStructures.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/Include/das2/Serializer.h)
+    ${CMAKE_CURRENT_SOURCE_DIR}/Include/das2/Serializer.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/Include/das2/Unserializer.h)
 set(DAS2_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/Sources/DasStructures.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/Sources/Serializer.cpp)
+    ${CMAKE_CURRENT_SOURCE_DIR}/Sources/Serializer.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/Sources/Unserializer.cpp)
 
 # Third-party format converter support
 if (DAS2_WAVEFRONT_OBJ)

@@ -28,17 +28,24 @@ namespace das2 {
                 ConvertionException(_sWhat) {}
     };
 
-
-    class MagicValueException : std::exception {
+    
+    class SerializerException : public std::exception {
         private:
             std::string m_sWhatMessage;
 
         public:
-            MagicValueException(const std::string& _sWhat = "Unknown exception") :
+            SerializerException(const std::string& _sWhat = "Unknown exception") :
                 m_sWhatMessage(_sWhat) {}
-
+            
             const char* what() const noexcept override {
                 return m_sWhatMessage.c_str();
             }
+    };
+
+
+    class MagicValueException : public SerializerException {
+        public:
+            MagicValueException(const std::string& _sWhat = "Unknown exception") :
+                SerializerException(_sWhat) {}
     };
 }
