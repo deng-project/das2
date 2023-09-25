@@ -14,7 +14,7 @@
 namespace das2 {
 
     void Serializer::_StreamUncompressed(std::ostream& _stream) {
-        _stream << m_model.buffer;
+        m_model.buffer.Write(m_stream);
         _StreamUncompressedArray(m_model.meshes, _stream);
         _StreamUncompressedArray(m_model.meshGroups, _stream);
         _StreamUncompressedArray(m_model.nodes, _stream);
@@ -50,7 +50,7 @@ namespace das2 {
 
 
     void Serializer::Serialize() {
-        m_stream << m_model.header;
+        m_model.header.Write(m_stream);
         if (m_model.header.bZlibLevel)
             _StreamCompressed();
         else _StreamUncompressed(m_stream);

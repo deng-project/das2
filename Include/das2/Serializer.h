@@ -20,7 +20,7 @@ namespace das2 {
             template <typename T>
             void _StreamUncompressedArray(const std::vector<T>& _vec, std::ostream& _stream) {
                 for (auto it = _vec.begin(); it != _vec.end(); it++) {
-                    m_stream << *it;
+                    it->Write(m_stream);
                 }
             }
 
