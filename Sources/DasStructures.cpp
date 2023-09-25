@@ -11,6 +11,7 @@
 namespace das2 {
 
     Buffer::Buffer(const Buffer& _buffer) {
+        m_bStructure = _buffer.m_bStructure;
         if (_buffer.m_uLength) {
             m_uLength = _buffer.m_uLength;
             m_pData = new char[m_uLength];
@@ -20,6 +21,7 @@ namespace das2 {
 
 
     Buffer::Buffer(Buffer&& _buffer) noexcept {
+        m_bStructure = _buffer.m_bStructure;
         m_uLength = _buffer.m_uLength;
         m_pData = _buffer.m_pData;
 
@@ -31,6 +33,7 @@ namespace das2 {
     Buffer& Buffer::operator=(Buffer&& _buffer) noexcept {
         delete[] m_pData;
 
+        m_bStructure = _buffer.m_bStructure;
         m_uLength = _buffer.m_uLength;
         m_pData = _buffer.m_pData;
 
@@ -62,8 +65,9 @@ namespace das2 {
     void BinString::Write(std::ostream& _stream) const {
         _stream.write(reinterpret_cast<const char*>(&m_uLength), sizeof(uint16_t));
         _stream.write(reinterpret_cast<const char*>(&m_hshString), sizeof(cvar::hash_t));
-        if (m_pData && m_uLength)
-            _stream.write(m_pData, m_uLength + 1);
+        if (m_pData && m_uLength) {
+            _stream.write(m_pData, m_uLength);
+        }
     }
 
 
@@ -252,7 +256,7 @@ namespace das2 {
         szName.Read(_stream);
         
         uint32_t uChildrenCount = 0;
-        _stream.read(reinterpret_cast<char*>(uChildrenCount), sizeof(uint32_t));
+        _stream.read(reinterpret_cast<char*>(&uChildrenCount), sizeof(uint32_t));
         children.resize(uChildrenCount);
         _stream.read(reinterpret_cast<char*>(children.data()), children.size() * sizeof(uint32_t));
         _stream.read(reinterpret_cast<char*>(&uMeshGroupId), sizeof(uint32_t));

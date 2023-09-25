@@ -9,8 +9,6 @@
 #include <das2/Exceptions.h>
 #include <das2/Unserializer.h>
 
-using namespace std;
-
 namespace das2 {
 
     DasDump::DasDump(const std::string& _sFileName) {
@@ -33,27 +31,28 @@ namespace das2 {
 
 
     void DasDump::PrintInfo() {
-        cout << "---- das2::Header ----\n";
-        cout << "Author name: \"" << m_model.header.szAuthorName.CString() << "\"\n";
-        cout << "Comment: \"" << m_model.header.szComment.CString() << "\"\n";
-        cout << "Vertices count: " << m_model.header.uVerticesCount << '\n';
-        cout << "Mesh count: " << m_model.header.uMeshCount << '\n';
-        cout << "Animation count: " << m_model.header.uAnimationCount << '\n';
-        cout << "Default scene index: " << m_model.header.uDefaultSceneIndex << '\n';
-        cout << "zstd compression mode: " << (int)m_model.header.bZlibLevel << '\n';
+        std::cout << "---- das2::Header ----\n";
+        std::cout << "Author name: \"" << m_model.header.szAuthorName.CString() << "\"\n";
+        std::cout << "Comment: \"" << m_model.header.szComment.CString() << "\"\n";
+        std::cout << "Vertices count: " << m_model.header.uVerticesCount << '\n';
+        std::cout << "Mesh count: " << m_model.header.uMeshCount << '\n';
+        std::cout << "Animation count: " << m_model.header.uAnimationCount << '\n';
+        std::cout << "Default scene index: " << m_model.header.uDefaultSceneIndex << '\n';
+        std::cout << "zstd compression mode: " << (int)m_model.header.bZlibLevel << '\n';
 
-        cout << "---- das2::Buffer ----\n";
-        cout << "Buffer length: " << m_model.buffer.Size() << '\n';
+        std::cout << "---- das2::Buffer ----\n";
+        std::cout << "Buffer length: " << m_model.buffer.Size() << '\n';
+        std::cout.flush();
     }
 }
 
 
 int main(int argv, char* argc[]) {
-    ios_base::sync_with_stdio(false);
-    cin.tie(0);
+    std::ios_base::sync_with_stdio(false);
+    std::cin.tie(0);
 
     if (argv < 2) {
-        cout << "Usage: ./DasDump <filename>\n";
+        std::cout << "Usage: ./DasDump <filename>\n";
         return 0;
     }
 

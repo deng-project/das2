@@ -4,6 +4,7 @@
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
+
         {
             "type": "gdb",
             "request": "launch",
@@ -16,9 +17,18 @@
         {
             "type": "gdb",
             "request": "launch",
+            "name": "DasDump",
+            "target": "${workspaceFolder}/Build/DasDump",
+            "arguments": "Maserati_Ghibli_9.das2",
+            "cwd": "${workspaceFolder}/Build",
+            "valuesFormatting": "parseText"
+        },
+        {
+            "type": "gdb",
+            "request": "launch",
             "name": "ConvertWavefrontObj",
             "target": "${workspaceFolder}/Build/ConvertWavefrontObj",
-            "arguments": "/mnt/Important/Documents/Models/cadnav.com/obj/1967_Maserati_Ghibli_Coupe/Maserati\\ Ghibli.obj Maserati_Ghibli_0.das2 0",
+            "arguments": "/mnt/Important/Documents/Models/cadnav.com/obj/1967_Maserati_Ghibli_Coupe/Maserati\\ Ghibli.obj Maserati_Ghibli_9.das2 9",
             "cwd": "${workspaceFolder}/Build",
             "valuesFormatting": "parseText"
         },

@@ -25,9 +25,9 @@ namespace das2 {
         if (m_model.header.bZlibLevel == 9)
             in.push(bio::zstd_decompressor(bio::zstd::best_compression));
         else if (m_model.header.bZlibLevel == 1)
-            in.push(bio::zstd_decompressor(bio::zstd::best_speed));
-        else
             in.push(bio::zstd_decompressor(bio::zstd::default_compression));
+        else
+            in.push(bio::zstd_decompressor(bio::zstd::best_speed));
 
         in.push(m_stream);
         std::stringstream ss;
@@ -41,7 +41,7 @@ namespace das2 {
         // read all structures
         bool bBufferRead = false;
         while (!_stream.eof() && _stream.peek() != -1) {
-            StructureIdentifier bIdentifier = static_cast<StructureIdentifier>(m_stream.peek());
+            StructureIdentifier bIdentifier = static_cast<StructureIdentifier>(_stream.peek());
             switch (bIdentifier) {
                 case StructureIdentifier_Buffer:
                     if (bBufferRead)

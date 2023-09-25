@@ -224,6 +224,7 @@ namespace das2 {
                     sConcatName += it->CString();
                 }
 
+                m_model.meshGroups[i].Initialize();
                 m_model.meshGroups[i].szName = sConcatName;
                 m_model.meshGroups[i].meshes.emplace_back(static_cast<uint32_t>(i));
                 m_model.nodes[i].szName = sConcatName;
