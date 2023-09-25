@@ -28,6 +28,19 @@ namespace das2 {
     }
 
 
+    Buffer& Buffer::operator=(Buffer&& _buffer) noexcept {
+        delete[] m_pData;
+
+        m_uLength = _buffer.m_uLength;
+        m_pData = _buffer.m_pData;
+
+        _buffer.m_uLength = 0;
+        _buffer.m_pData = nullptr;
+
+        return *this;
+    }
+
+
     Buffer::~Buffer() {
         if (m_uLength)
             free(m_pData);

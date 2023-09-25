@@ -117,7 +117,5 @@ namespace das2 {
         if (m_model.header.bZlibLevel != 0)
             _ReadCompressed();
         else _ReadUncompressed(m_stream);
-
-        
     }
 }

@@ -1,6 +1,6 @@
 // das2: Improved DENG asset manager library
 // licence: Apache, see LICENCE file
-// file: ConvertWavefrontObj.h - implementation of demo program to convert wavefront obj files into das2 files
+// file: ConvertWavefrontObj.cpp - implementation of demo program to convert wavefront obj files into das2 files
 // author: Karl-Mihkel Ott
 
 #include <iostream>

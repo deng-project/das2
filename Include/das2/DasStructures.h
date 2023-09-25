@@ -184,6 +184,7 @@ namespace das2 {
             Header() = default;
             Header(const Header& _header) = default;
             Header(Header&& _header) noexcept = default;
+            Header& operator=(Header&& _header) noexcept = default;
 
             inline void Initialize() {
                 m_uMagic = DAS2_MAGIC;
@@ -208,6 +209,7 @@ namespace das2 {
             Buffer() = default;
             Buffer(const Buffer& _buffer);
             Buffer(Buffer&& _buffer) noexcept;
+            Buffer& operator=(Buffer&& _buffer) noexcept;
             ~Buffer();
 
             inline void Initialize() {
@@ -291,7 +293,7 @@ namespace das2 {
 
         public:
             MorphTarget() = default;
-            MorphTarget(const MorphTarget& _morphTarget) = default;
+            MorphTarget(const MorphTarget& _morphTarget) noexcept = default;
 
             inline void Initialize() {
                 m_bStructure = StructureIdentifier_MorphTarget;
@@ -328,6 +330,7 @@ namespace das2 {
             Mesh() = default;
             Mesh(const Mesh& _mesh) = default;
             Mesh(Mesh&& _mesh) noexcept = default;
+            Mesh& operator=(Mesh&& _mesh) noexcept = default;
 
             inline void Initialize() {
                 m_bStructure = StructureIdentifier_Mesh;
@@ -354,6 +357,7 @@ namespace das2 {
             MeshGroup() = default;
             MeshGroup(const MeshGroup& _meshGroup) = default;
             MeshGroup(MeshGroup&& _meshGroup) noexcept = default;
+            MeshGroup& operator=(MeshGroup&& _meshGroup) noexcept = default;
 
             inline void Initialize() {
                 m_bStructure = StructureIdentifier_MeshGroup;
@@ -386,6 +390,7 @@ namespace das2 {
             Node() = default;
             Node(const Node& _node) = default;
             Node(Node&& _node) noexcept = default;
+            Node& operator=(Node&& _node) noexcept = default;
 
             inline void Initialize() {
                 m_bStructure = StructureIdentifier_Node;
@@ -412,6 +417,7 @@ namespace das2 {
             Scene() = default;
             Scene(const Scene& _scene) = default;
             Scene(Scene&& _scene) noexcept = default;
+            Scene& operator=(Scene&& _scene) noexcept = default;
 
             inline void Initialize() {
                 m_bStructure = StructureIdentifier_Scene;
@@ -442,6 +448,7 @@ namespace das2 {
             SkeletonJoint() = default;
             SkeletonJoint(const SkeletonJoint& _skeletonJoint) = default;
             SkeletonJoint(SkeletonJoint&& _skeletonJoint) noexcept = default;
+            SkeletonJoint& operator=(SkeletonJoint&& _skeleton) noexcept = default;
     
             inline void Initialize() {
                 m_bStructure = StructureIdentifier_SkeletonJoint;
@@ -469,6 +476,7 @@ namespace das2 {
             Skeleton() = default;
             Skeleton(const Skeleton& _skeleton) = default;
             Skeleton(Skeleton&& _skeleton) noexcept = default;
+            Skeleton& operator=(Skeleton&& _skeleton) noexcept = default;
 
             inline void Initialize() {
                 m_bStructure = StructureIdentifier_Skeleton;
@@ -495,6 +503,7 @@ namespace das2 {
             Animation() = default;
             Animation(const Animation& _animation);
             Animation(Animation&& _animation) noexcept = default;
+            Animation& operator=(Animation&& _ani) noexcept = default;
 
             inline void Initialize() {
                 m_bStructure = StructureIdentifier_Animation;
@@ -528,6 +537,7 @@ namespace das2 {
             AnimationChannel() = default;
             AnimationChannel(const AnimationChannel& _animationChannel) = default;
             AnimationChannel(AnimationChannel&& _animationChannel) noexcept = default;
+            AnimationChannel& operator=(AnimationChannel&& _cn) noexcept = default;
 
             inline void Initialize() {
                 m_bStructure = StructureIdentifier_AnimationChannel;
@@ -559,6 +569,7 @@ namespace das2 {
             MaterialPhong() = default;
             MaterialPhong(const MaterialPhong& _materialPhong) = default;
             MaterialPhong(MaterialPhong&& _materialPhong) noexcept = default;
+            MaterialPhong& operator=(MaterialPhong&& _cn) noexcept = default;
 
             inline void Initialize() {
                 m_bStructure = StructureIdentifier_MaterialPhong;
@@ -594,6 +605,7 @@ namespace das2 {
             MaterialPbr() = default;
             MaterialPbr(const MaterialPbr& _materialPbr) = default;
             MaterialPbr(MaterialPbr&& _materialPbr) noexcept = default;
+            MaterialPbr& operator=(MaterialPbr&& _material) noexcept = default;
 
             inline void Initialize() {
                 m_bStructure = StructureIdentifier_MaterialPbr;
@@ -611,6 +623,7 @@ namespace das2 {
         Model() = default;
         Model(const Model& _model) = default;
         Model(Model&& _model) noexcept = default;
+        Model& operator=(Model&& _model) noexcept = default;
 
         Header header;
         Buffer buffer;
