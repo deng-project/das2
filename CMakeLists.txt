@@ -13,7 +13,7 @@ set(CMAKE_CXX_STANDARD 17)
 option(DAS2_BUILD_DEMOS "Build all demo applications along with main das2 library" OFF)
 option(DAS2_BUILD_STATIC "Build static das2 library instead of dynamic one" OFF)
 option(DAS2_BUILD_DASTOOL "Build dastool" OFF)
-option(DAS2_BUILD_EXTERNAL_DEPENDENCIES "Build external das2 dependencies"
+option(DAS2_BUILD_EXTERNAL_DEPENDENCIES "Build external das2 dependencies" ON)
 
 # Converter options
 option(DAS2_WAVEFRONT_OBJ "Build conversion support from and to Wavefront Obj format" ON)
