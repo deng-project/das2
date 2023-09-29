@@ -13,6 +13,7 @@ set(CMAKE_CXX_STANDARD 17)
 option(DAS2_BUILD_DEMOS "Build all demo applications along with main das2 library" OFF)
 option(DAS2_BUILD_STATIC "Build static das2 library instead of dynamic one" OFF)
 option(DAS2_BUILD_DASTOOL "Build dastool" OFF)
+option(DAS2_BUILD_EXTERNAL_DEPENDENCIES "Build external das2 dependencies"
 
 # Converter options
 option(DAS2_WAVEFRONT_OBJ "Build conversion support from and to Wavefront Obj format" ON)
@@ -24,12 +25,15 @@ option(DAS2_STANFORD_X3D "Build conversion support from and to X3D format" ON)
 option(DAS2_FILMBOX_PROPRIETARY "Build conversion support from and to fbx (built on top of proprietary SDK)" ON)
 option(DAS2_FILMBOX_RSE "Build conversion support from and to fbx (reverse engineered implementation)" ON)
 
-include(${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/vcpkg/scripts/buildsystems/vcpkg.cmake)
-
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
-set (CVAR_STATIC ON CACHE BOOL "Build cvar library as static")
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/cvar)
+if (DAS2_BUILD_EXTERNAL_DEPENDENCIES)
+	include(${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/vcpkg/scripts/buildsystems/vcpkg.cmake)
+	
+	set (CVAR_STATIC ON CACHE BOOL "Build cvar library as static")
+	add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/cvar)
+endif()
+
 include(${CMAKE_CURRENT_SOURCE_DIR}/CMake/libdas2.cmake)
 
 if (DAS2_BUILD_DASTOOL)
