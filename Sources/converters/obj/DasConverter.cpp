@@ -178,8 +178,8 @@ namespace das2 {
                 auto& firstVertex = m_triangulizedFaces[groupIt->first].front();
 
                 m_model.meshes.emplace_back();
-                m_model.meshes.back().uPositionVertexBufferOffset = m_reindexedVertexPositions.size();
-                m_model.meshes.back().uPositionVertexBufferOffset = m_reindexedNormals.size();
+                m_model.meshes.back().uPositionVertexBufferOffset = static_cast<uint32_t>(m_reindexedVertexPositions.size());
+                m_model.meshes.back().uPositionVertexBufferOffset = static_cast<uint32_t>(m_reindexedNormals.size());
                 m_model.meshes.back().uDrawCount = static_cast<uint32_t>(groupIt->second);
 
                 // vertex normals are missing
@@ -228,7 +228,7 @@ namespace das2 {
                 m_model.meshGroups[i].szName = sConcatName;
                 m_model.meshGroups[i].meshes.emplace_back(static_cast<uint32_t>(i));
                 m_model.nodes[i].szName = sConcatName;
-                m_model.nodes[i].uMeshGroupId = i;
+                m_model.nodes[i].uMeshGroupId = static_cast<uint32_t>(i);
             }
 
             _Convert();
