@@ -85,7 +85,7 @@ namespace das2 {
         _stream.read(reinterpret_cast<char*>(&uMeshCount), sizeof(uint32_t));
         _stream.read(reinterpret_cast<char*>(&uAnimationCount), sizeof(uint32_t));
         _stream.read(reinterpret_cast<char*>(&uDefaultSceneIndex), sizeof(uint32_t));
-        _stream.read(reinterpret_cast<char*>(&bZlibLevel), sizeof(uint8_t));
+        _stream.read(reinterpret_cast<char*>(&bZstdLevel), sizeof(uint8_t));
     }
 
     void Header::Write(std::ostream& _stream) const {
@@ -96,7 +96,7 @@ namespace das2 {
         _stream.write(reinterpret_cast<const char*>(&uMeshCount), sizeof(uint32_t));
         _stream.write(reinterpret_cast<const char*>(&uAnimationCount), sizeof(uint32_t));
         _stream.write(reinterpret_cast<const char*>(&uDefaultSceneIndex), sizeof(uint32_t));
-        _stream.write(reinterpret_cast<const char*>(&bZlibLevel), sizeof(uint8_t));
+        _stream.write(reinterpret_cast<const char*>(&bZstdLevel), sizeof(uint8_t));
     }
 
 

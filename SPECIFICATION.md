@@ -11,6 +11,19 @@ String is denoted in this documentation as type `String`. The way strings are st
 is done by using following structure: `{ u16: uLength, [char] arrChars }`. Since string length parameter
 is given as 16bit integer, the maximum possible string size is 65 535 characters excluding trailing `\x00`.
 
+### Compression
+
+das2 format supports zstd compression. Compression level is indicated by `bZstdLevel` property in `das2::Header`.
+Appropriate compression values are:
+* 0 - no compression
+* 1 - fastest compression method
+* 9 - best compression method.
+
+Note that in some many cases compressing assets can significantly reduce the overall file size at insignificant
+performance cost. For this reason it is highly recommended to always compress your assets whenever possible. 
+
+The implementation library uses zstd implementation offered by `boost::iostreams`.
+
 ### Matrices, quaternions and vectors
 
 Matrices are represented in row-major order as two dimentional arrays. Supported matrix types are 2x2, 3x3 and 4x4.
@@ -53,7 +66,7 @@ groups with `das2::MeshGroup` and morph targets with `das2::MorphTarget` structu
 Each mesh has an 8 element wide UV table, which is used to describe UV coordinates for different textures. The list
 of table indices with corresponding texture type is described in a following list:
 0. normal map (PBR and Phong)
-1. occlusion map (PBR)
+1. ambient occlusion map (PBR)
 2. emission map (PBR and Phong)
 3. albedo map (PBR)
 4. metalness map (PBR)
@@ -93,8 +106,8 @@ visually appealing results. Since das2 doesn't support embedded images, all text
 
 das2 consists of two kinds of structures. The first structure `das2::Header` is used to store various 
 kind of information about the file such as author's name, comment and license as well as information 
-such as zlib compression level, vertices count etc. `das2::Header` itself is the only structure in the 
-file that is not compressed at any zlib compression level. The other section of structures that are in das2
+such as zstd compression level, vertices count etc. `das2::Header` itself is the only structure in the 
+file that is not compressed at any zstd compression level. The other section of structures that are in das2
 format are so-called body formats. These various formats declare buffers, meshes, skeletons, materials,
 animations and so on.
 
@@ -113,16 +126,16 @@ about the file itself.
 | String    | szAuthorName       | author's name string                        | nullstr           | yes         |
 | String    | szComment          | misc comment string                         | nullstr           | yes         |
 | u32       | uVerticesCount     | cumulated number of vertices for all meshes | 0                 | yes         |
-| u32       | uMeshCount         | number of meshes used in file               | 0                 | yes         |
+| u32       | uMeshCount         | number of meshes used in the model          | 0                 | yes         |
 | u32       | uAnimationCount    | number of animations used in file           | 0                 | yes         |
 | u32       | uDefaultSceneIndex | index of the default scene to use           | 0                 | yes         |
-| u8        | uZlibLevel         | zlib compression level [0-9]                | 0                 | yes         |
+| u8        | uZstdLevel         | zstd compression level [0-9]                | 0                 | yes         |
 
 ### das2::Buffer (body/x01)
 
 #### Synopsis
 
-Blob of data which contains various information about meshes itself.
+Blob of data which contains various draw related information about meshes.
 
 #### Structure
 
@@ -132,7 +145,7 @@ Blob of data which contains various information about meshes itself.
 | u32       | uLength       | length of the buffer | 0             | yes        |
 | [byte]    | pData         | array of blob bytes  | []            | yes        |
 
-NOTE: Since the integer width for describing the buffer length is 32 bits, the maximum buffer size is limited to 4GB.
+NOTE: Since the integer width for describing the buffer length is 32 bits, the maximum buffer size is limited to roughly 4GiB.
 
 ### das2::Mesh (body/x02)
 
@@ -145,20 +158,13 @@ Mesh structure essentially describes the vertex attributes of a mesh and how it 
 | Data type     | Variable name                       | Description                                 | Default value | Modifiable |
 |---------------|-------------------------------------|---------------------------------------------|---------------|------------|
 | byte          | bStructure                          | structure identifier                        | x02           | no         |
-| u32           | uIndexBufferId                      | ID of a buffer to use for indices data      | -1            | yes        |
 | u32           | uIndexBufferOffset                  | offset of the index buffer                  | 0             | yes        |
 | u32           | uDrawCount                          | amount of vertices to draw                  | 0             | yes        |
-| u32           | uPositionVertexBufferId             | ID of a buffer to use for position vertices | -1            | yes        |
 | u32           | uPositionVertexBufferOffset         | offset of position buffer                   | 0             | yes        |
-| u32           | uSurfaceNormalBufferId              | ID of a buffer to use for surface normals   | -1            | yes        |
-| u32           | uSurfaceNormalBufferOffset          | offset of the surface normal buffer         | 0             | yes        |
-| u32[8]        | arrUVBufferIds                      | array of UV coordinate buffer ids           | [-1]          | yes        |
+| u32           | uVertexNormalBufferOffset           | offset of the vertex normal buffer          | 0             | yes        |
 | u32[8]        | arrUVBufferOffsets                  | array of UV coordinate buffer offsets       | [0]           | yes        |
-| u32           | uColorMultiplierId                  | ID of a buffer to use for color multipliers | -1            | yes        |
 | u32           | uColorMultiplierOffset              | offset of the color multiplier buffer       | 0             | yes        |
-| u32[8]        | arrSkeletalJointIndexBufferIds      | array of skeletal joint index sets indices  | [-1]          | yes        |
 | u32[8]        | arrSkeletalJointIndexBufferOffsets  | array of skeletal joint index sets offsets  | [0]           | yes        |
-| u32[8]        | arrSkeletalJointWeightBufferIds     | array of skeletal joint weight sets indices | [-1]          | yes        |
 | u32[8]        | arrSkeletalJointWeightBufferOffsets | array of skeletal joint weight sets offsets | [0]           | yes        |
 | byte          | bMaterialType                       | Material type descriptor                    | x00           | yes        |
 | u32           | uMaterialId                         | ID of a material to use                     | -1            | yes        |
@@ -178,12 +184,9 @@ Morph targets are used to define possible variations of the same mesh.
 | Data type | Varible name                | Description                                 | Default value | Modifiable |
 |-----------|-----------------------------|---------------------------------------------|---------------|------------|
 | byte      | bStructure                  | structure identifier                        | x03           | no         |
-| u32       | uIndexBufferId              | ID of a buffer to use for indices data      | -1            | yes        |
 | u32       | uIndexBufferOffset          | offset of the index buffer                  | 0             | yes        |
-| u32       | uPositionVertexBufferId     | ID of a buffer to use for position vertices | -1            | yes        |
 | u32       | uPositionVertexBufferOffset | offset of the position vertex buffer        | 0             | yes        |
-| u32       | uSurfaceNormalBufferId      | ID of a buffer to use for surface normals   | -1            | yes        |
-| u32       | uSurfaceNormalBufferOffset  | offset of the surface normal buffer         | 0             | yes        |
+| u32       | uVertexNormalBufferOffset   | offset of the vertex normal buffer          | 0             | yes        |
 | u32[8]    | arrUVBufferIds              | array of UV coordinate buffer ids           | [-1]          | yes        |
 | u32[8]    | arrUVBufferOffsets          | array of UV coordinate buffer offsets       | [0]           | yes        |
 | u32       | uColorMultiplierId          | ID of a buffer to use for color multipliers | -1            | yes        |

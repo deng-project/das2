@@ -178,7 +178,7 @@ namespace das2 {
             uint32_t uMeshCount = 0;
             uint32_t uAnimationCount = 0;
             uint32_t uDefaultSceneIndex = 0;
-            uint8_t bZlibLevel = 0;
+            uint8_t bZstdLevel = 0;
 
         public:
             Header() = default;
