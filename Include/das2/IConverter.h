@@ -16,7 +16,7 @@ namespace das2 {
                 m_model.header.Initialize();
                 m_model.header.szAuthorName = _szAuthorName;
                 m_model.header.szComment = _szComment;
-                m_model.header.bZlibLevel = _bZlibLevel;
+                m_model.header.bZstdLevel = _bZlibLevel;
             }
 
             inline Model&& GetModel() {

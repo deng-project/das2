@@ -36,11 +36,11 @@ namespace das2 {
 
         bio::filtering_streambuf<bio::input> out;
 
-        if (m_model.header.bZlibLevel == 9)
+        if (m_model.header.bZstdLevel == 9)
             out.push(bio::zstd_compressor(bio::zstd_params(bio::zstd::best_compression)));
-        else if (m_model.header.bZlibLevel == 1)
+        else if (m_model.header.bZstdLevel == 1)
             out.push(bio::zstd_compressor(bio::zstd_params(bio::zstd::default_compression)));
-        else if (m_model.header.bZlibLevel == 255)
+        else if (m_model.header.bZstdLevel == 255)
             out.push(bio::zstd_compressor(bio::zstd_params(bio::zstd::best_speed)));
 
         out.push(origin);
@@ -50,7 +50,7 @@ namespace das2 {
 
     void Serializer::Serialize() {
         m_model.header.Write(m_stream);
-        if (m_model.header.bZlibLevel)
+        if (m_model.header.bZstdLevel)
             _StreamCompressed();
         else _StreamUncompressed(m_stream);
     }

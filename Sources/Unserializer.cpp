@@ -22,9 +22,9 @@ namespace das2 {
         namespace bio = boost::iostreams;
 
         bio::filtering_streambuf<bio::input> in;
-        if (m_model.header.bZlibLevel == 9)
+        if (m_model.header.bZstdLevel == 9)
             in.push(bio::zstd_decompressor(bio::zstd::best_compression));
-        else if (m_model.header.bZlibLevel == 1)
+        else if (m_model.header.bZstdLevel == 1)
             in.push(bio::zstd_decompressor(bio::zstd::default_compression));
         else
             in.push(bio::zstd_decompressor(bio::zstd::best_speed));
@@ -114,7 +114,7 @@ namespace das2 {
         m_model.header.Read(m_stream);
 
         // check if zlib compression is used
-        if (m_model.header.bZlibLevel != 0)
+        if (m_model.header.bZstdLevel != 0)
             _ReadCompressed();
         else _ReadUncompressed(m_stream);
     }
