@@ -65,6 +65,7 @@ groups with `das2::MeshGroup` and morph targets with `das2::MorphTarget` structu
 
 Each mesh has an 8 element wide UV table, which is used to describe UV coordinates for different textures. The list
 of table indices with corresponding texture type is described in a following list:
+
 0. normal map (PBR and Phong)
 1. ambient occlusion map (PBR)
 2. emission map (PBR and Phong)
