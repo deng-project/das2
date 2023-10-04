@@ -75,7 +75,7 @@ of table indices with corresponding texture type is described in a following lis
 6. phongDiffuse (Phong)
 7. phongSpecular (Phong)
 
-For more information about the material system in das2 format please read [this](#blinn-phong-and-pbr-materials).
+For more information about the material system in das2 format please read [this](#materials).
 
 ### Multiple LODs
 
